@@ -46,7 +46,9 @@
 
         var newItem = {
             title: title.trim(),
-            completed: false
+            completed: false,
+            createdAt: Date.now(),
+            dueAt: Date.now()
         };
 
         await this.storage.save(newItem, callback);

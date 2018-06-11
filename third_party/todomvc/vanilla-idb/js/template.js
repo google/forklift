@@ -47,6 +47,11 @@
             : string;
     };
 
+    var formatDate = function (datetime) {
+      var date = new Date(datetime);
+      return `${date.getMonth()+1}/${date.getDate()}/${date.getFullYear()}`;
+    }
+
     /**
      * Sets up defaults for all the Template methods such as a default template
      *
@@ -57,7 +62,10 @@
         =    '<li data-id="{{id}}" class="{{completed}}">'
         +        '<div class="view">'
         +            '<input class="toggle" type="checkbox" {{checked}}>'
-        +            '<label>{{title}}</label>'
+        +            '<label>{{title}} '
+        +            '<div class="view-info">Created: {{createdAt}}, '
+        +            'Due: {{dueAt}}</div> '
+        +            '</label>'
         +            '<button class="destroy"></button>'
         +        '</div>'
         +    '</li>';
@@ -96,6 +104,8 @@
 
             template = template.replace('{{id}}', data[i].id);
             template = template.replace('{{title}}', escape(data[i].title));
+            template = template.replace('{{createdAt}}', formatDate(data[i].createdAt));
+            template = template.replace('{{dueAt}}', formatDate(data[i].dueAt));
             template = template.replace('{{completed}}', completed);
             template = template.replace('{{checked}}', checked);
 

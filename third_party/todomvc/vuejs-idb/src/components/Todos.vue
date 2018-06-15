@@ -139,6 +139,7 @@ export default {
         completed: false,
         title: this.newTodo,
       });
+      this.$store.dispatch('addTodo', this.newTodo);
       this.newTodo = '';
     },
     deleteTodo(todo) {

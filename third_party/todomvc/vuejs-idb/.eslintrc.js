@@ -4,6 +4,10 @@ module.exports = {
   parserOptions: {
     sourceType: 'module'
   },
+  env: {
+    browser: true,
+  },
+  extends: ["eslint:recommended", "google"],
   // required to lint *.vue files
   plugins: [
     'html'

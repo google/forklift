@@ -7,7 +7,11 @@ module.exports = {
   env: {
     browser: true,
   },
-  extends: ["eslint:recommended", "google"],
+  extends: [
+    "eslint:recommended",
+    "google",
+    "plugin:vue/recommended",
+  ],
   // required to lint *.vue files
   plugins: [
     'html'

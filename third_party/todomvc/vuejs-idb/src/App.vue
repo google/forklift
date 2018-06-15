@@ -1,16 +1,16 @@
 <template>
   <div id="app">
-    <Todos></Todos>
+    <Todos/>
   </div>
 </template>
 
 <script>
-import Todos from './components/Todos'
+import Todos from './components/Todos';
 
 export default {
-    name: 'app',
-    components: {
-        Todos
-    }
-}
+  name: 'App',
+  components: {
+    Todos,
+  },
+};
 </script>

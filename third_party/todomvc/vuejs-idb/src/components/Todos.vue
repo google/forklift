@@ -3,7 +3,6 @@
     <header class="header">
       <h1>Todos</h1>
       <input
-        v-model="newTodo"
         type="text"
         class="new-todo"
         autofocus
@@ -100,7 +99,6 @@ export default {
   },
   data() {
     return {
-      newTodo: '',
       filter: 'all',
       editing: null,
     };
@@ -136,13 +134,12 @@ export default {
     },
   },
   methods: {
-    addTodo() {
-      this.todos.push({
-        done: false,
-        title: this.newTodo,
-      });
-      this.$store.dispatch('addTodo', this.newTodo);
-      this.newTodo = '';
+    addTodo(e) {
+      const text = e.target.value;
+      if (text.trim()) {
+        this.$store.dispatch('addTodo', text);
+      }
+      e.target.value = '';
     },
     deleteTodo(todo) {
       this.todos = this.todos.filter((t) => t !== todo);

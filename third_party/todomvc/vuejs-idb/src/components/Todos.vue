@@ -22,12 +22,12 @@
       <ul class="todo-list">
         <li
           v-for="(todo, index) in filteredTodos"
-          :class="{completed : todo.completed, editing : todo === editing }"
+          :class="{completed: todo.done, editing: todo === editing }"
           :key="index"
           class="todo">
           <div class="view">
             <input
-              v-model="todo.completed"
+              v-model="todo.done"
               type="checkbox"
               class="toggle">
             <label
@@ -110,16 +110,16 @@ export default {
       return this.$store.state.todos;
     },
     remaining() {
-      return this.todos.filter((todo) => !todo.completed).length;
+      return this.todos.filter((todo) => !todo.done).length;
     },
     completed() {
-      return this.todos.filter((todo) => todo.completed).length;
+      return this.todos.filter((todo) => todo.done).length;
     },
     filteredTodos() {
       if (this.filter === 'active') {
-        return this.todos.filter((todo) => !todo.completed);
+        return this.todos.filter((todo) => !todo.done);
       } else if (this.filter === 'completed') {
-        return this.todos.filter((todo) => todo.completed);
+        return this.todos.filter((todo) => todo.done);
       }
 
       return this.todos;
@@ -130,7 +130,7 @@ export default {
       },
       set(value) {
         this.todos.forEach((todo) => {
-          todo.completed = value;
+          todo.done = value;
         });
       },
     },
@@ -138,7 +138,7 @@ export default {
   methods: {
     addTodo() {
       this.todos.push({
-        completed: false,
+        done: false,
         title: this.newTodo,
       });
       this.$store.dispatch('addTodo', this.newTodo);
@@ -148,7 +148,7 @@ export default {
       this.todos = this.todos.filter((t) => t !== todo);
     },
     deleteCompleted() {
-      this.todos = this.todos.filter((todo) => !todo.completed);
+      this.todos = this.todos.filter((todo) => !todo.done);
     },
     editTodo(todo) {
       this.editing = todo;

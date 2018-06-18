@@ -26,9 +26,10 @@
           class="todo">
           <div class="view">
             <input
-              v-model="todo.done"
+              :checked="todo.done"
               type="checkbox"
-              class="toggle">
+              class="toggle"
+              @change="toggleTodo(todo)">
             <label
               @dblclick="editing = true">
               {{ todo.text }}</label>
@@ -138,7 +139,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['clearCompleted', 'editTodo', 'removeTodo']),
+    ...mapActions(['clearCompleted', 'editTodo', 'removeTodo', 'toggleTodo']),
     addTodo(e) {
       const text = e.target.value;
       if (text.trim()) {

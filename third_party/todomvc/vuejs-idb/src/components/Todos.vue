@@ -21,7 +21,7 @@
       <ul class="todo-list">
         <li
           v-for="(todo, index) in filteredTodos"
-          :class="{completed: todo.done, editing: todo === editing }"
+          :class="{completed: todo.done, editing: editing }"
           :key="index"
           class="todo">
           <div class="view">
@@ -37,12 +37,14 @@
               @click.prevent="removeTodo(todo)"/>
           </div>
           <input
-            v-todoFocus="todo === editing"
-            v-model="todo.title"
+            v-focus="editing"
+            v-show="editing"
+            :value="todo.text"
             type="text"
             class="edit"
             @keyup.enter="doneEdit"
-            @blur="doneEdit">
+            @keyup.esc="cancelEdit"
+            @blue="doneEdit">
         </li>
       </ul>
     </section>
@@ -91,7 +93,7 @@ export default {
     },
   },
   directives: {
-    todoFocus(el, value) {
+    focus(el, {value}) {
       if (value) {
         Vue.nextTick((_) => {
           el.focus();
@@ -102,7 +104,7 @@ export default {
   data() {
     return {
       filter: 'all',
-      editing: null,
+      editing: false,
     };
   },
   computed: {
@@ -144,8 +146,22 @@ export default {
       }
       e.target.value = '';
     },
-    doneEdit() {
-      this.editing = null;
+    doneEdit(e) {
+      const value = e.target.value.trim();
+      const {todo} = this;
+      if (!value) {
+        this.removeTodo(todo);
+      } else if (this.editing) {
+        this.editTodo({
+          todo,
+          value,
+        });
+        this.editing = false;
+      }
+    },
+    cancelEdit(e) {
+      e.target.value = this.todo.text;
+      this.editing = false;
     },
   },
 };

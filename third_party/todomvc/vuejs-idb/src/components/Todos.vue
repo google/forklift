@@ -100,13 +100,15 @@ export default {
   },
   data() {
     return {
-      todos: [],
       newTodo: '',
       filter: 'all',
       editing: null,
     };
   },
   computed: {
+    todos() {
+      return this.$store.state.todos;
+    },
     remaining() {
       return this.todos.filter((todo) => !todo.completed).length;
     },

@@ -30,7 +30,8 @@
               type="checkbox"
               class="toggle">
             <label
-              @dblclick="editTodo(todo)">{{ todo.title }}</label>
+              @dblclick="editing = true">
+              {{ todo.text }}</label>
             <button
               class="destroy"
               @click.prevent="deleteTodo(todo)"/>
@@ -135,7 +136,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['clearCompleted']),
+    ...mapActions(['clearCompleted', 'editTodo']),
     addTodo(e) {
       const text = e.target.value;
       if (text.trim()) {
@@ -145,9 +146,6 @@ export default {
     },
     deleteTodo(todo) {
       this.todos = this.todos.filter((t) => t !== todo);
-    },
-    editTodo(todo) {
-      this.editing = todo;
     },
     doneEdit() {
       this.editing = null;

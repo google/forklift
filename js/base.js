@@ -28,13 +28,13 @@
 
 // Performance.now is used in latency benchmarks, the fallback is Date.now.
 var performance = performance || {};
-performance.now = (function() {
-  return performance.now       ||
-         performance.mozNow    ||
-         performance.msNow     ||
-         performance.oNow      ||
-         performance.webkitNow ||
-         Date.now;
+performance.now = (function () {
+  return performance.now ||
+    performance.mozNow ||
+    performance.msNow ||
+    performance.oNow ||
+    performance.webkitNow ||
+    Date.now;
 })();
 
 // Simple framework for running the benchmark suites and
@@ -46,16 +46,16 @@ performance.now = (function() {
 // arguments are functions that will be invoked before and after
 // running the benchmark, but the running time of these functions will
 // not be accounted for in the benchmark score.
-function Benchmark(name, doWarmup, doDeterministic, deterministicIterations, 
-                   run, setup, tearDown, rmsResult, minIterations) {
+function Benchmark(name, doWarmup, doDeterministic, deterministicIterations,
+  run, setup, tearDown, rmsResult, minIterations) {
   this.name = name;
   this.doWarmup = doWarmup;
   this.doDeterministic = doDeterministic;
   this.deterministicIterations = deterministicIterations;
   this.run = run;
-  this.Setup = setup ? setup : function() { };
-  this.TearDown = tearDown ? tearDown : function() { };
-  this.rmsResult = rmsResult ? rmsResult : null; 
+  this.Setup = setup ? setup : function () {};
+  this.TearDown = tearDown ? tearDown : function () {};
+  this.rmsResult = rmsResult ? rmsResult : null;
   this.minIterations = minIterations ? minIterations : 32;
 }
 
@@ -73,7 +73,7 @@ function BenchmarkResult(benchmark, time, latency) {
 
 // Automatically convert results to numbers. Used by the geometric
 // mean computation.
-BenchmarkResult.prototype.valueOf = function() {
+BenchmarkResult.prototype.valueOf = function () {
   return this.time;
 }
 
@@ -109,23 +109,23 @@ BenchmarkSuite.config = {
 
 
 // Override the alert function to throw an exception instead.
-alert = function(s) {
+alert = function (s) {
   throw "Alert called with argument: " + s;
 };
 
 
 // To make the benchmark results predictable, we replace Math.random
 // with a 100% deterministic alternative.
-BenchmarkSuite.ResetRNG = function() {
-  Math.random = (function() {
+BenchmarkSuite.ResetRNG = function () {
+  Math.random = (function () {
     var seed = 49734321;
-    return function() {
+    return function () {
       // Robert Jenkins' 32 bit integer hash function.
-      seed = ((seed + 0x7ed55d16) + (seed << 12))  & 0xffffffff;
+      seed = ((seed + 0x7ed55d16) + (seed << 12)) & 0xffffffff;
       seed = ((seed ^ 0xc761c23c) ^ (seed >>> 19)) & 0xffffffff;
-      seed = ((seed + 0x165667b1) + (seed << 5))   & 0xffffffff;
-      seed = ((seed + 0xd3a2646c) ^ (seed << 9))   & 0xffffffff;
-      seed = ((seed + 0xfd7046c5) + (seed << 3))   & 0xffffffff;
+      seed = ((seed + 0x165667b1) + (seed << 5)) & 0xffffffff;
+      seed = ((seed + 0xd3a2646c) ^ (seed << 9)) & 0xffffffff;
+      seed = ((seed + 0xfd7046c5) + (seed << 3)) & 0xffffffff;
       seed = ((seed ^ 0xb55a4f09) ^ (seed >>> 16)) & 0xffffffff;
       return (seed & 0xfffffff) / 0x10000000;
     };
@@ -137,13 +137,14 @@ BenchmarkSuite.ResetRNG = function() {
 // each individual benchmark to avoid running for too long in the
 // context of browsers. Once done, the final score is reported to the
 // runner.
-BenchmarkSuite.RunSuites = function(runner, skipBenchmarks) {
+BenchmarkSuite.RunSuites = function (runner, skipBenchmarks) {
   skipBenchmarks = typeof skipBenchmarks === 'undefined' ? [] : skipBenchmarks;
   var continuation = null;
   var suites = BenchmarkSuite.suites;
   var length = suites.length;
   BenchmarkSuite.scores = [];
   var index = 0;
+
   function RunStep() {
     while (continuation || index < length) {
       if (continuation) {
@@ -176,7 +177,7 @@ BenchmarkSuite.RunSuites = function(runner, skipBenchmarks) {
 
 // Counts the total number of registered benchmarks. Useful for
 // showing progress as a percentage.
-BenchmarkSuite.CountBenchmarks = function() {
+BenchmarkSuite.CountBenchmarks = function () {
   var result = 0;
   var suites = BenchmarkSuite.suites;
   for (var i = 0; i < suites.length; i++) {
@@ -187,7 +188,7 @@ BenchmarkSuite.CountBenchmarks = function() {
 
 
 // Computes the geometric mean of a set of numbers.
-BenchmarkSuite.GeometricMean = function(numbers) {
+BenchmarkSuite.GeometricMean = function (numbers) {
   var log = 0;
   for (var i = 0; i < numbers.length; i++) {
     log += Math.log(numbers[i]);
@@ -197,7 +198,7 @@ BenchmarkSuite.GeometricMean = function(numbers) {
 
 
 // Computes the geometric mean of a set of throughput time measurements.
-BenchmarkSuite.GeometricMeanTime = function(measurements) {
+BenchmarkSuite.GeometricMeanTime = function (measurements) {
   var log = 0;
   for (var i = 0; i < measurements.length; i++) {
     log += Math.log(measurements[i].time);
@@ -207,7 +208,7 @@ BenchmarkSuite.GeometricMeanTime = function(measurements) {
 
 
 // Computes the geometric mean of a set of rms measurements.
-BenchmarkSuite.GeometricMeanLatency = function(measurements) {
+BenchmarkSuite.GeometricMeanLatency = function (measurements) {
   var log = 0;
   var hasLatencyResult = false;
   for (var i = 0; i < measurements.length; i++) {
@@ -226,7 +227,7 @@ BenchmarkSuite.GeometricMeanLatency = function(measurements) {
 
 // Converts a score value to a string with at least three significant
 // digits.
-BenchmarkSuite.FormatScore = function(value) {
+BenchmarkSuite.FormatScore = function (value) {
   if (value > 100) {
     return value.toFixed(0);
   } else {
@@ -236,7 +237,7 @@ BenchmarkSuite.FormatScore = function(value) {
 
 // Notifies the runner that we're done running a single benchmark in
 // the benchmark suite. This can be useful to report progress.
-BenchmarkSuite.prototype.NotifyStep = function(result) {
+BenchmarkSuite.prototype.NotifyStep = function (result) {
   this.results.push(result);
   if (this.runner.NotifyStep) this.runner.NotifyStep(result.benchmark.name);
 }
@@ -244,7 +245,7 @@ BenchmarkSuite.prototype.NotifyStep = function(result) {
 
 // Notifies the runner that we're done with running a suite and that
 // we have a result which can be reported to the user if needed.
-BenchmarkSuite.prototype.NotifyResult = function() {
+BenchmarkSuite.prototype.NotifyResult = function () {
   var mean = BenchmarkSuite.GeometricMeanTime(this.results);
   var score = this.reference[0] / mean;
   BenchmarkSuite.scores.push(score);
@@ -266,8 +267,8 @@ BenchmarkSuite.prototype.NotifyResult = function() {
 }
 
 
-BenchmarkSuite.prototype.NotifySkipped = function(runner) {
-  BenchmarkSuite.scores.push(1);  // push default reference score.
+BenchmarkSuite.prototype.NotifySkipped = function (runner) {
+  BenchmarkSuite.scores.push(1); // push default reference score.
   if (runner.NotifyResult) {
     runner.NotifyResult(this.name, "Skipped");
   }
@@ -275,7 +276,7 @@ BenchmarkSuite.prototype.NotifySkipped = function(runner) {
 
 
 // Notifies the runner that running a benchmark resulted in an error.
-BenchmarkSuite.prototype.NotifyError = function(error) {
+BenchmarkSuite.prototype.NotifyError = function (error) {
   if (this.runner.NotifyError) {
     this.runner.NotifyError(this.name, error);
   }
@@ -287,23 +288,24 @@ BenchmarkSuite.prototype.NotifyError = function(error) {
 
 // Runs a single benchmark for at least a second and computes the
 // average time it takes to run a single iteration.
-BenchmarkSuite.prototype.RunSingleBenchmark = function(benchmark, data) {
+BenchmarkSuite.prototype.RunSingleBenchmark = function (benchmark, data) {
   var config = BenchmarkSuite.config;
-  var doWarmup = config.doWarmup !== undefined 
-                 ? config.doWarmup 
-                 : benchmark.doWarmup;
-  var doDeterministic = config.doDeterministic !== undefined 
-                        ? config.doDeterministic 
-                        : benchmark.doDeterministic;
+  var doWarmup = config.doWarmup !== undefined ?
+    config.doWarmup :
+    benchmark.doWarmup;
+  var doDeterministic = config.doDeterministic !== undefined ?
+    config.doDeterministic :
+    benchmark.doDeterministic;
 
   function Measure(data) {
     var elapsed = 0;
     var start = new Date();
-  
-  // Run either for 1 second or for the number of iterations specified
-  // by minIterations, depending on the config flag doDeterministic.
-    for (var i = 0; (doDeterministic ? 
-      i<benchmark.deterministicIterations : elapsed < 1000); i++) {
+
+    // Run either for 1 second or for the number of iterations specified
+    // by minIterations, depending on the config flag doDeterministic.
+    for (var i = 0;
+      (doDeterministic ?
+        i < benchmark.deterministicIterations : elapsed < 1000); i++) {
       benchmark.run();
       elapsed = new Date() - start;
     }
@@ -315,12 +317,18 @@ BenchmarkSuite.prototype.RunSingleBenchmark = function(benchmark, data) {
 
   // Sets up data in order to skip or not the warmup phase.
   if (!doWarmup && data == null) {
-    data = { runs: 0, elapsed: 0 };
+    data = {
+      runs: 0,
+      elapsed: 0
+    };
   }
 
   if (data == null) {
     Measure(null);
-    return { runs: 0, elapsed: 0 };
+    return {
+      runs: 0,
+      elapsed: 0
+    };
   } else {
     Measure(data);
     // If we've run too few iterations, we continue for another second.
@@ -337,7 +345,7 @@ BenchmarkSuite.prototype.RunSingleBenchmark = function(benchmark, data) {
 // individual benchmark in the suite and returns a continuation
 // function which can be invoked to run the next benchmark. Once the
 // last benchmark has been executed, null is returned.
-BenchmarkSuite.prototype.RunStep = function(runner) {
+BenchmarkSuite.prototype.RunStep = function (runner) {
   BenchmarkSuite.ResetRNG();
   this.results = [];
   this.runner = runner;

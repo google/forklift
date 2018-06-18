@@ -1,15 +1,6 @@
 <template>
   <section class="todoapp">
-    <header class="header">
-      <h1>Todos</h1>
-      <input
-        type="text"
-        class="new-todo"
-        autofocus
-        autocomplete="off"
-        placeholder="What needs to be done?"
-        @keyup.enter="addTodo">
-    </header>
+    <TodosHeader/>
     <section
       v-show="todos.length"
       v-cloak
@@ -62,9 +53,10 @@
 <script>
 import {mapActions} from 'vuex';
 import TodoItem from './TodoItem.vue';
+import TodosHeader from './TodosHeader.vue';
 
 export default {
-  components: {TodoItem},
+  components: {TodosHeader, TodoItem},
   filters: {
     pluralize: function(n) {
       return n === 1 ? 'item' : 'items';
@@ -108,13 +100,6 @@ export default {
   },
   methods: {
     ...mapActions(['clearCompleted']),
-    addTodo(e) {
-      const text = e.target.value;
-      if (text.trim()) {
-        this.$store.dispatch('addTodo', text);
-      }
-      e.target.value = '';
-    },
   },
 };
 </script>

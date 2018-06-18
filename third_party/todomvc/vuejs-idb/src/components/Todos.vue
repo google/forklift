@@ -34,7 +34,7 @@
               {{ todo.text }}</label>
             <button
               class="destroy"
-              @click.prevent="deleteTodo(todo)"/>
+              @click.prevent="removeTodo(todo)"/>
           </div>
           <input
             v-todoFocus="todo === editing"
@@ -136,16 +136,13 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['clearCompleted', 'editTodo']),
+    ...mapActions(['clearCompleted', 'editTodo', 'removeTodo']),
     addTodo(e) {
       const text = e.target.value;
       if (text.trim()) {
         this.$store.dispatch('addTodo', text);
       }
       e.target.value = '';
-    },
-    deleteTodo(todo) {
-      this.todos = this.todos.filter((t) => t !== todo);
     },
     doneEdit() {
       this.editing = null;

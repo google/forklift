@@ -19,34 +19,10 @@
         type="checkbox"
         class="toggle-all">
       <ul class="todo-list">
-        <li
+        <TodoItem
           v-for="(todo, index) in filteredTodos"
-          :class="{completed: todo.done, editing: editing }"
           :key="index"
-          class="todo">
-          <div class="view">
-            <input
-              :checked="todo.done"
-              type="checkbox"
-              class="toggle"
-              @change="toggleTodo(todo)">
-            <label
-              @dblclick="editing = true">
-              {{ todo.text }}</label>
-            <button
-              class="destroy"
-              @click.prevent="removeTodo(todo)"/>
-          </div>
-          <input
-            v-focus="editing"
-            v-show="editing"
-            :value="todo.text"
-            type="text"
-            class="edit"
-            @keyup.enter="doneEdit"
-            @keyup.esc="cancelEdit"
-            @blue="doneEdit">
-        </li>
+          :todo="todo"/>
       </ul>
     </section>
     <footer
@@ -84,22 +60,14 @@
 </template>
 
 <script>
-import Vue from 'vue';
 import {mapActions} from 'vuex';
+import TodoItem from './TodoItem.vue';
 
 export default {
+  components: {TodoItem},
   filters: {
     pluralize: function(n) {
       return n === 1 ? 'item' : 'items';
-    },
-  },
-  directives: {
-    focus(el, {value}) {
-      if (value) {
-        Vue.nextTick((_) => {
-          el.focus();
-        });
-      }
     },
   },
   data() {
@@ -139,30 +107,13 @@ export default {
     },
   },
   methods: {
-    ...mapActions(['clearCompleted', 'editTodo', 'removeTodo', 'toggleTodo']),
+    ...mapActions(['clearCompleted']),
     addTodo(e) {
       const text = e.target.value;
       if (text.trim()) {
         this.$store.dispatch('addTodo', text);
       }
       e.target.value = '';
-    },
-    doneEdit(e) {
-      const value = e.target.value.trim();
-      const {todo} = this;
-      if (!value) {
-        this.removeTodo(todo);
-      } else if (this.editing) {
-        this.editTodo({
-          todo,
-          value,
-        });
-        this.editing = false;
-      }
-    },
-    cancelEdit(e) {
-      e.target.value = this.todo.text;
-      this.editing = false;
     },
   },
 };

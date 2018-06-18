@@ -51,9 +51,9 @@
 </template>
 
 <script>
-import {mapActions} from 'vuex';
 import TodoItem from './TodoItem.vue';
 import TodosHeader from './TodosHeader.vue';
+import {mapActions} from 'vuex';
 
 export default {
   components: {TodosHeader, TodoItem},

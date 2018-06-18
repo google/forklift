@@ -1,6 +1,6 @@
+import {STORAGE_KEY, mutations} from './mutations';
 import Vue from 'vue';
 import Vuex from 'vuex';
-import {mutations, STORAGE_KEY} from './mutations';
 import actions from './actions';
 import plugins from './plugins';
 

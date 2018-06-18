@@ -20,6 +20,7 @@ module.exports = {
     'indent': [2, 2],
     // allow debugger during development
     'no-debugger': process.env.NODE_ENV === 'production' ? 2 : 0,
-    'prettier/prettier': 'error'
+    'prettier/prettier': 'error',
+    'sort-imports': 'error'
   }
 }

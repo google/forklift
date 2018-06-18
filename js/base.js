@@ -37,6 +37,10 @@ performance.now = (function () {
     Date.now;
 })();
 
+var tuningMode = false;
+var tuningTarget = 10000;
+var numberOfIterations = 5;
+
 // Simple framework for running the benchmark suites and
 // computing a score based on the timing measurements.
 
@@ -46,28 +50,18 @@ performance.now = (function () {
 // arguments are functions that will be invoked before and after
 // running the benchmark, but the running time of these functions will
 // not be accounted for in the benchmark score.
-function Benchmark(name, doWarmup, doDeterministic, deterministicIterations,
-  run, setup, tearDown, rmsResult, minIterations) {
+function Benchmark(name, steps) {
   this.name = name;
-  this.doWarmup = doWarmup;
-  this.doDeterministic = doDeterministic;
-  this.deterministicIterations = deterministicIterations;
-  this.run = run;
-  this.Setup = setup ? setup : function () {};
-  this.TearDown = tearDown ? tearDown : function () {};
-  this.rmsResult = rmsResult ? rmsResult : null;
-  this.minIterations = minIterations ? minIterations : 32;
+  this.steps = steps;
 }
 
 
 // Benchmark results hold the benchmark and the measured time used to
 // run the benchmark. The benchmark score is computed later once a
-// full benchmark suite has run to completion. If latency is set to 0
-// then there is no latency score for this benchmark.
-function BenchmarkResult(benchmark, time, latency) {
+// full benchmark suite has run to completion.
+function BenchmarkResult(benchmark, time) {
   this.benchmark = benchmark;
   this.time = time;
-  this.latency = latency;
 }
 
 
@@ -82,30 +76,16 @@ BenchmarkResult.prototype.valueOf = function () {
 // addition to the reference timing that the final score will be based
 // on. This way, all scores are relative to a reference run and higher
 // scores implies better performance.
-function BenchmarkSuite(name, reference, benchmarks) {
+function BenchmarkSuite(name, scaling, src, benchmark) {
   this.name = name;
-  this.reference = reference;
-  this.benchmarks = benchmarks;
-  BenchmarkSuite.suites.push(this);
+  this.scaling = scaling;
+  this.src = src;
+  this.benchmark = benchmark;
 }
 
 
 // Keep track of all declared benchmark suites.
 BenchmarkSuite.suites = [];
-
-// Scores are not comparable across versions. Bump the version if
-// you're making changes that will affect that scores, e.g. if you add
-// a new benchmark or change an existing one.
-BenchmarkSuite.version = '9';
-
-
-// Defines global benchsuite running mode that overrides benchmark suite 
-// behavior. Intended to be set by the benchmark driver. Undefined 
-// values here allow a benchmark to define behaviour itself.
-BenchmarkSuite.config = {
-  doWarmup: undefined,
-  doDeterministic: undefined
-};
 
 
 // Override the alert function to throw an exception instead.
@@ -132,46 +112,161 @@ BenchmarkSuite.ResetRNG = function () {
   })();
 }
 
+BenchmarkSuite.recycleIframe = function (options) {
+  var iframeHolder = document.querySelector('#iframe-holder');
+
+  // Delete iframe if it exists.
+  if (this.iframe) {
+    this.iframe.parentNode.removeChild(this.iframe);
+    this.iframe = null;
+  }
+
+  if (!options.create) {
+    // We want to only delete the iframe and hide the iframe holder.
+    iframeHolder.classList.remove("iframe-holder");
+    iframeHolder.style = "visibility: hidden";
+    return;
+  }
+
+  // Create new iframe.
+  var iframe = document.createElement('iframe');
+  iframe.id = "iframe";
+  iframe.scrolling = "no";
+  this.iframe = iframe;
+
+  // Show iframe holder div.
+  iframeHolder.appendChild(iframe);
+  iframeHolder.className = "iframe-holder";
+  iframeHolder.style = "visibility: visible";
+}
+
+function navigateIframe(src, onload) {
+  var iframe = document.querySelector('#iframe');
+  if (!iframe) {
+    throw new DOMException("expected iframe element");
+  }
+
+  var promise = new Promise((resolve, reject) => {
+    iframe.onload = async function () {
+      resolve(await onload(iframe));
+    };
+  })
+  iframe.src = src + '&' + Date.now();
+  return promise;
+}
+
+BenchmarkSuite.Navigate = async function (src, onload) {
+  BenchmarkSuite.recycleIframe({create: true});
+  await navigateIframe(src, onload);
+}
+
+function sendEnterKeypress(el) {
+  var e = document.createEvent('HTMLEvents');
+  e.initEvent('keypress', true, true);
+  e.key = 'Enter';
+  e.keyCode = 13;
+  e.which = 13;
+  el.dispatchEvent(e);
+}
+
+// Promise-based sleep().
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// waitForIndexedDBShutdown() is an ES7 Promise-based function that
+// sleeps for the amount of time it takes the browser to shut down its
+// internal instances of IndexedDB.
+// * Chromium: requires that all of the DB instances the page was using
+// have been closed for more than 2 seconds.
+// * WebKit: auto-closes DB if it's ephemeral and if not currently in
+// use.
+async function waitForIndexedDBShutdown(ms) {
+  await sleep(3000);
+}
+
+// Promise-based requestAnimationFrame() helper.
+function waitForRequestAnimationFrame() {
+  return new Promise((resolve) => window.requestAnimationFrame(resolve));
+}
+
+async function pageLoaded(iframe) {
+  while (true) {
+    await waitForRequestAnimationFrame();
+    var todoEntry = iframe.contentDocument.querySelector(".new-todo");
+    if (todoEntry) {
+      return;
+    }
+  }
+}
+
+BenchmarkSuite.RunIterations = async function (runner, suite) {
+  var self = this;
+  suite.results = [];
+
+  for (var i = 0; i < numberOfIterations; i++) {
+    BenchmarkSuite.recycleIframe({create: true});
+    await navigateIframe(suite.src, async function () {
+      await pageLoaded(self.iframe);
+      var result = await suite.RunSteps(runner);
+      suite.NotifyStep(new BenchmarkResult(this.benchmark, result));
+    });
+  }
+
+  if (tuningMode) {
+    console.log(`suite ${suite.name} results = ${JSON.stringify(suite.results)}`);
+  }
+  var result = BenchmarkSuite.GeometricMean(suite.results);
+  if (tuningMode) {
+    console.log(`suite ${suite.name} geometric mean result = ${result}`);
+  }
+  if (suite.scaling) result *= suite.scaling;
+  if (tuningMode) {
+    console.log(`suite ${suite.name} scaled result = ${result}`);
+  }
+  return result;
+}
+
+function checkTuning(suite, result) {
+  if (!tuningMode) {
+    return;
+  }
+
+  var originalResult = result;
+  if (suite.scaling) originalResult = result / suite.scaling;
+
+  if (result < tuningTarget * 0.95) {
+    console.log(`WARNING: ${suite.name}'s result ${result} is too low, scaling should be set to ${tuningTarget/originalResult}`);
+  } else if (result > tuningTarget * 1.05) {
+    console.log(`WARNING: ${suite.name}'s result ${result} is too high, scaling should be set to ${tuningTarget/originalResult}`);
+  }
+}
 
 // Runs all registered benchmark suites and optionally yields between
 // each individual benchmark to avoid running for too long in the
 // context of browsers. Once done, the final score is reported to the
 // runner.
-BenchmarkSuite.RunSuites = function (runner, skipBenchmarks) {
-  skipBenchmarks = typeof skipBenchmarks === 'undefined' ? [] : skipBenchmarks;
-  var continuation = null;
-  var suites = BenchmarkSuite.suites;
-  var length = suites.length;
+BenchmarkSuite.RunSuites = async function (runner) {
   BenchmarkSuite.scores = [];
-  var index = 0;
 
-  function RunStep() {
-    while (continuation || index < length) {
-      if (continuation) {
-        continuation = continuation();
-      } else {
-        var suite = suites[index++];
-        if (runner.NotifyStart) runner.NotifyStart(suite.name);
-        if (skipBenchmarks.indexOf(suite.name) > -1) {
-          suite.NotifySkipped(runner);
-        } else {
-          continuation = suite.RunStep(runner);
-        }
-      }
-      if (continuation && typeof window != 'undefined' && window.setTimeout) {
-        window.setTimeout(RunStep, 25);
-        return;
-      }
-    }
-
-    // show final result
-    if (runner.NotifyScore) {
-      var score = BenchmarkSuite.GeometricMean(BenchmarkSuite.scores);
-      var formatted = BenchmarkSuite.FormatScore(100 * score);
-      runner.NotifyScore(formatted);
-    }
+  for (var suite of BenchmarkSuite.suites) {
+    var result = await BenchmarkSuite.RunIterations(runner, suite);
+    checkTuning(suite, result);
+    suite.NotifyResult(result);
   }
-  RunStep();
+
+  // We've completed all of the steps, so update the progress bar and
+  // sleep briefly to let the UI update.
+  BenchmarkSuite.recycleIframe({create: false});
+  if (runner.NotifyStart) runner.NotifyStart('Wrapping up');
+  await sleep(100);
+
+  // show final result
+  if (runner.NotifyScore) {
+    var score = BenchmarkSuite.GeometricMean(BenchmarkSuite.scores);
+    var formatted = BenchmarkSuite.FormatScore(score);
+    runner.NotifyScore(formatted);
+  }
 }
 
 
@@ -181,8 +276,11 @@ BenchmarkSuite.CountBenchmarks = function () {
   var result = 0;
   var suites = BenchmarkSuite.suites;
   for (var i = 0; i < suites.length; i++) {
-    result += suites[i].benchmarks.length;
+    result += numberOfIterations * suites[i].benchmark.steps.length;
   }
+  // Increase the count by 1 so the last step doesn't appear "finished"
+  // in the progress bar.
+  result++;
   return result;
 }
 
@@ -207,24 +305,6 @@ BenchmarkSuite.GeometricMeanTime = function (measurements) {
 }
 
 
-// Computes the geometric mean of a set of rms measurements.
-BenchmarkSuite.GeometricMeanLatency = function (measurements) {
-  var log = 0;
-  var hasLatencyResult = false;
-  for (var i = 0; i < measurements.length; i++) {
-    if (measurements[i].latency != 0) {
-      log += Math.log(measurements[i].latency);
-      hasLatencyResult = true;
-    }
-  }
-  if (hasLatencyResult) {
-    return Math.pow(Math.E, log / measurements.length);
-  } else {
-    return 0;
-  }
-}
-
-
 // Converts a score value to a string with at least three significant
 // digits.
 BenchmarkSuite.FormatScore = function (value) {
@@ -245,24 +325,11 @@ BenchmarkSuite.prototype.NotifyStep = function (result) {
 
 // Notifies the runner that we're done with running a suite and that
 // we have a result which can be reported to the user if needed.
-BenchmarkSuite.prototype.NotifyResult = function () {
-  var mean = BenchmarkSuite.GeometricMeanTime(this.results);
-  var score = this.reference[0] / mean;
-  BenchmarkSuite.scores.push(score);
+BenchmarkSuite.prototype.NotifyResult = function (result) {
+  BenchmarkSuite.scores.push(result);
   if (this.runner.NotifyResult) {
-    var formatted = BenchmarkSuite.FormatScore(100 * score);
+    var formatted = BenchmarkSuite.FormatScore(result);
     this.runner.NotifyResult(this.name, formatted);
-  }
-  if (this.reference.length == 2) {
-    var meanLatency = BenchmarkSuite.GeometricMeanLatency(this.results);
-    if (meanLatency != 0) {
-      var scoreLatency = this.reference[1] / meanLatency;
-      BenchmarkSuite.scores.push(scoreLatency);
-      if (this.runner.NotifyResult) {
-        var formattedLatency = BenchmarkSuite.FormatScore(100 * scoreLatency)
-        this.runner.NotifyResult(this.name + "Latency", formattedLatency);
-      }
-    }
   }
 }
 
@@ -286,113 +353,22 @@ BenchmarkSuite.prototype.NotifyError = function (error) {
 }
 
 
-// Runs a single benchmark for at least a second and computes the
-// average time it takes to run a single iteration.
-BenchmarkSuite.prototype.RunSingleBenchmark = function (benchmark, data) {
-  var config = BenchmarkSuite.config;
-  var doWarmup = config.doWarmup !== undefined ?
-    config.doWarmup :
-    benchmark.doWarmup;
-  var doDeterministic = config.doDeterministic !== undefined ?
-    config.doDeterministic :
-    benchmark.doDeterministic;
-
-  function Measure(data) {
-    var elapsed = 0;
-    var start = new Date();
-
-    // Run either for 1 second or for the number of iterations specified
-    // by minIterations, depending on the config flag doDeterministic.
-    for (var i = 0;
-      (doDeterministic ?
-        i < benchmark.deterministicIterations : elapsed < 1000); i++) {
-      benchmark.run();
-      elapsed = new Date() - start;
-    }
-    if (data != null) {
-      data.runs += i;
-      data.elapsed += elapsed;
-    }
-  }
-
-  // Sets up data in order to skip or not the warmup phase.
-  if (!doWarmup && data == null) {
-    data = {
-      runs: 0,
-      elapsed: 0
-    };
-  }
-
-  if (data == null) {
-    Measure(null);
-    return {
-      runs: 0,
-      elapsed: 0
-    };
-  } else {
-    Measure(data);
-    // If we've run too few iterations, we continue for another second.
-    if (data.runs < benchmark.minIterations) return data;
-    var usec = (data.elapsed * 1000) / data.runs;
-    var rms = (benchmark.rmsResult != null) ? benchmark.rmsResult() : 0;
-    this.NotifyStep(new BenchmarkResult(benchmark, usec, rms));
-    return null;
-  }
-}
-
-
-// This function starts running a suite, but stops between each
-// individual benchmark in the suite and returns a continuation
-// function which can be invoked to run the next benchmark. Once the
-// last benchmark has been executed, null is returned.
-BenchmarkSuite.prototype.RunStep = function (runner) {
+// This function runs a suite and calculates the amount of time taken
+// to complete the step.
+BenchmarkSuite.prototype.RunSteps = async function (runner) {
   BenchmarkSuite.ResetRNG();
-  this.results = [];
   this.runner = runner;
-  var length = this.benchmarks.length;
-  var index = 0;
-  var suite = this;
-  var data;
+  var elapsed = 0;
 
-  // Run the setup, the actual benchmark, and the tear down in three
-  // separate steps to allow the framework to yield between any of the
-  // steps.
-
-  function RunNextSetup() {
-    if (index < length) {
-      try {
-        suite.benchmarks[index].Setup();
-      } catch (e) {
-        suite.NotifyError(e);
-        return null;
-      }
-      return RunNextBenchmark;
+  for (var step of this.benchmark.steps) {
+    if (runner.NotifyStart) runner.NotifyStart(this.name);
+    var iframe = document.querySelector('#iframe');
+    var start = performance.now();
+    var shouldScore = await step(iframe);
+    if (shouldScore !== false) {
+      elapsed += performance.now() - start;
     }
-    suite.NotifyResult();
-    return null;
   }
 
-  function RunNextBenchmark() {
-    try {
-      data = suite.RunSingleBenchmark(suite.benchmarks[index], data);
-    } catch (e) {
-      suite.NotifyError(e);
-      return null;
-    }
-    // If data is null, we're done with this benchmark.
-    return (data == null) ? RunNextTearDown : RunNextBenchmark();
-  }
-
-  function RunNextTearDown() {
-    try {
-      suite.benchmarks[index++].TearDown();
-    } catch (e) {
-      suite.NotifyError(e);
-      return null;
-    }
-    return RunNextSetup;
-  }
-
-  // Start out running the setup.
-  return RunNextSetup();
+  return elapsed;
 }

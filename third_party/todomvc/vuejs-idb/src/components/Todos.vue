@@ -74,13 +74,14 @@
       <button
         v-show="completed"
         class="clear-completed"
-        @click.prevent="deleteCompleted">Clear Completed</button>
+        @click.prevent="clearCompleted">Clear Completed</button>
     </footer>
   </section>
 </template>
 
 <script>
 import Vue from 'vue';
+import {mapActions} from 'vuex';
 
 export default {
   filters: {
@@ -134,6 +135,7 @@ export default {
     },
   },
   methods: {
+    ...mapActions(['clearCompleted']),
     addTodo(e) {
       const text = e.target.value;
       if (text.trim()) {
@@ -143,9 +145,6 @@ export default {
     },
     deleteTodo(todo) {
       this.todos = this.todos.filter((t) => t !== todo);
-    },
-    deleteCompleted() {
-      this.todos = this.todos.filter((todo) => !todo.done);
     },
     editTodo(todo) {
       this.editing = todo;

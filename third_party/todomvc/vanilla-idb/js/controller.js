@@ -74,19 +74,19 @@
      *
      * @param {string} '' | 'active' | 'completed'
      */
-    Controller.prototype.setView = function (locationHash) {
+    Controller.prototype.setView = async function (locationHash) {
         var route = locationHash.split('/')[1];
         var page = route || '';
-        this._updateFilterState(page);
+        await this._updateFilterState(page);
     };
 
     /**
      * An event to fire on load. Will get all items and display them in the
      * todo-list
      */
-    Controller.prototype.showAll = function () {
+    Controller.prototype.showAll = async function () {
         var self = this;
-        self.model.read(function (data) {
+        await self.model.read(function (data) {
             self.view.render('showEntries', data);
         });
     };
@@ -94,9 +94,9 @@
     /**
      * Renders all active tasks
      */
-    Controller.prototype.showActive = function () {
+    Controller.prototype.showActive = async function () {
         var self = this;
-        self.model.read({ completed: false }, function (data) {
+        await self.model.read({ completed: false }, function (data) {
             self.view.render('showEntries', data);
         });
     };
@@ -104,9 +104,9 @@
     /**
      * Renders all completed tasks
      */
-    Controller.prototype.showCompleted = function () {
+    Controller.prototype.showCompleted = async function () {
         var self = this;
-        self.model.read({ completed: true }, function (data) {
+        await self.model.read({ completed: true }, function (data) {
             self.view.render('showEntries', data);
         });
     };
@@ -115,25 +115,25 @@
      * An event to fire whenever you want to add an item. Simply pass in the event
      * object and it'll handle the DOM insertion and saving of the new item.
      */
-    Controller.prototype.addItem = function (title) {
+    Controller.prototype.addItem = async function (title) {
         var self = this;
 
         if (title.trim() === '') {
             return;
         }
 
-        self.model.create(title, function () {
+        await self.model.create(title, async function () {
             self.view.render('clearNewTodo');
-            self._filter(true);
+            await self._filter(true);
         });
     };
 
     /*
      * Triggers the item editing mode.
      */
-    Controller.prototype.editItem = function (id) {
+    Controller.prototype.editItem = async function (id) {
         var self = this;
-        self.model.read(id, function (data) {
+        await self.model.read(id, function (data) {
             self.view.render('editItem', {id: id, title: data[0].title});
         });
     };
@@ -141,25 +141,25 @@
     /*
      * Finishes the item editing mode successfully.
      */
-    Controller.prototype.editItemSave = function (id, title) {
+    Controller.prototype.editItemSave = async function (id, title) {
         var self = this;
         title = title.trim();
 
         if (title.length !== 0) {
-            self.model.update(id, {title: title}, function () {
+            await self.model.update(id, {title: title}, function () {
                 self.view.render('editItemDone', {id: id, title: title});
             });
         } else {
-            self.removeItem(id);
+            await self.removeItem(id);
         }
     };
 
     /*
      * Cancels the item editing mode.
      */
-    Controller.prototype.editItemCancel = function (id) {
+    Controller.prototype.editItemCancel = async function (id) {
         var self = this;
-        self.model.read(id, function (data) {
+        await self.model.read(id, function (data) {
             self.view.render('editItemDone', {id: id, title: data[0].title});
         });
     };
@@ -171,27 +171,27 @@
      * @param {number} id The ID of the item to remove from the DOM and
      * storage
      */
-    Controller.prototype.removeItem = function (id) {
+    Controller.prototype.removeItem = async function (id) {
         var self = this;
-        self.model.remove(id, function () {
+        await self.model.remove(id, function () {
             self.view.render('removeItem', id);
         });
 
-        self._filter();
+        await self._filter();
     };
 
     /**
      * Will remove all completed items from the DOM and storage.
      */
-    Controller.prototype.removeCompletedItems = function () {
+    Controller.prototype.removeCompletedItems = async function () {
         var self = this;
-        self.model.read({ completed: true }, function (data) {
-            data.forEach(function (item) {
-                self.removeItem(item.id);
-            });
+        await self.model.read({ completed: true }, async function (data) {
+            for (var item of data) {
+                await self.removeItem(item.id);
+            }
         });
 
-        self._filter();
+        await self._filter();
     };
 
     /**
@@ -203,9 +203,9 @@
      *                          or not
      * @param {boolean|undefined} silent Prevent re-filtering the todo items
      */
-    Controller.prototype.toggleComplete = function (id, completed, silent) {
+    Controller.prototype.toggleComplete = async function (id, completed, silent) {
         var self = this;
-        self.model.update(id, { completed: completed }, function () {
+        await self.model.update(id, { completed: completed }, function () {
             self.view.render('elementComplete', {
                 id: id,
                 completed: completed
@@ -213,7 +213,7 @@
         });
 
         if (!silent) {
-            self._filter();
+            await self._filter();
         }
     };
 
@@ -221,24 +221,24 @@
      * Will toggle ALL checkboxes' on/off state and completeness of models.
      * Just pass in the event object.
      */
-    Controller.prototype.toggleAll = function (completed) {
+    Controller.prototype.toggleAll = async function (completed) {
         var self = this;
-        self.model.read({ completed: !completed }, function (data) {
-            data.forEach(function (item) {
-                self.toggleComplete(item.id, completed, true);
-            });
+        await self.model.read({ completed: !completed }, async function (data) {
+            for (var item of data) {
+                await self.toggleComplete(item.id, completed, true);
+            }
         });
 
-        self._filter();
+        await self._filter();
     };
 
     /**
      * Updates the pieces of the page which change depending on the remaining
      * number of todos.
      */
-    Controller.prototype._updateCount = function () {
+    Controller.prototype._updateCount = async function () {
         var self = this;
-        self.model.getCount(function (todos) {
+        await self.model.getCount(function (todos) {
             self.view.render('updateElementCount', todos.active);
             self.view.render('clearCompletedButton', {
                 completed: todos.completed,
@@ -254,11 +254,11 @@
      * Re-filters the todo items, based on the active route.
      * @param {boolean|undefined} force  forces a re-painting of todo items.
      */
-    Controller.prototype._filter = function (force) {
+    Controller.prototype._filter = async function (force) {
         var activeRoute = this._activeRoute.charAt(0).toUpperCase() + this._activeRoute.substr(1);
 
         // Update the elements on the page, which change with each completed todo
-        this._updateCount();
+        await this._updateCount();
 
         // If the last active route isn't "All", or we're switching routes, we
         // re-create the todo item elements, calling:
@@ -273,7 +273,7 @@
     /**
      * Simply updates the filter nav's selected states
      */
-    Controller.prototype._updateFilterState = function (currentPage) {
+    Controller.prototype._updateFilterState = async function (currentPage) {
         // Store a reference to the active route, allowing us to re-filter todo
         // items as they are marked complete or incomplete.
         this._activeRoute = currentPage;
@@ -282,7 +282,7 @@
             this._activeRoute = 'All';
         }
 
-        this._filter();
+        await this._filter();
 
         this.view.render('setFilter', currentPage);
     };

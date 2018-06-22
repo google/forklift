@@ -27,21 +27,6 @@
 
     var ID = 1;
 
-    // promiseWrapIDBRequest is a Promise-based helper that wraps
-    // an IDBRequest object with onsuccess and onerror callbacks in
-    // a promise.
-    function promiseWrapIDBRequest(request) {
-      var promise = new Promise(function (resolve, reject) {
-        request.onsuccess = function (event) {
-          resolve(event);
-        };
-        request.onerror = function (event) {
-          reject(event);
-        };
-      });
-      return promise;
-    }
-
     /**
      * Creates a new client side storage object and will create an empty
      * collection if no collection already exists.
@@ -62,15 +47,10 @@
      * @param {function} callback The callback to fire when the init
      * has completed
      */
-    Store.prototype.deleteDatabase = function (callback) {
-        var self = this;
-        var request = indexedDB.deleteDatabase(this._dbName);
-        request.onerror = function (event) {
-          throw DOMException(event.error);
-        };
-        request.onsuccess = function (event) {
-          callback(self);
-        };
+    Store.prototype.deleteDatabase = async function (callback) {
+        callback = callback || function () {};
+        await idb.delete(this._dbName);
+        callback(this);
     }
 
     /**
@@ -80,49 +60,33 @@
      * @param {function} callback The callback to fire when the init
      * has completed
      */
-    Store.prototype.open = function (options, callback) {
+    Store.prototype.open = async function (options, callback) {
         var self = this;
-        var request = indexedDB.open(this._dbName, 1);
         var firstRun = false;
-        request.onupgradeneeded = function(event) {
+        self.db = await idb.open(this._dbName, 1, upgradeDB => {
           firstRun = true;
-          var db = event.target.result;
-
-          db.createObjectStore(
-            self._objectStoreName,
-            { keyPath: 'id',
-              autoIncrement: true
-            }
-          );
+          upgradeDB.createObjectStore(self._objectStoreName, { keyPath: 'id', autoIncrement: true });
 
           if (options.populated) {
-            var searchStore = db.createObjectStore(
-              "search",
-              { keyPath: "id",
-                autoIncrement: true
-              }
-            );
+            var searchStore = upgradeDB.createObjectStore("search", { keyPath: "id", autoIncrement: true });
             searchStore.createIndex("search_id", "id");
             searchStore.createIndex("search_messageid_index", "messageId");
             searchStore.createIndex("search_itemid_index", "itemId");
             searchStore.createIndex("search_timestamp_index", "timestamp");
           }
-        };
-        request.onsuccess = async function(event) {
-          self.db = event.target.result;
-          if (firstRun && options.populated) {
-            await self.populate(event.target.result);
-          }
-          callback(self, {todos: []});
-        };
-        // TODO implement onerror handler
+        });
+
+        if (firstRun && options.populated) {
+          await self.populate();
+        }
+        callback(self, {todos: []});
     }
 
     /**
      * Populates a database
      */
-    Store.prototype.populate = async function (db) {
-      var transaction = db.transaction(['search'], 'readwrite');
+    Store.prototype.populate = async function () {
+      var transaction = this.db.transaction(['search'], 'readwrite');
       var searchStore = transaction.objectStore('search');
 
       let numSearch = 100000;
@@ -134,23 +98,16 @@
           itemId: `Item ${i}`,
           timestamp: Date.now()
         };
-        var request = searchStore.put(searchItem);
-        try {
-          await promiseWrapIDBRequest(request);
-        } catch(e) {
-          console.error(`Failed to put item ${i}`);
-          throw e;
-        }
-        // TODO await onComplete().
+        await searchStore.put(searchItem);
       }
+      await transaction.complete;
     }
 
     /**
      * Closes a database
      */
     Store.prototype.closeDatabase = function () {
-        var self = this;
-        self.db.close();
+        this.db.close();
     }
 
     /**
@@ -166,14 +123,14 @@
      *     // hello: world in their properties
      * });
      */
-    Store.prototype.find = function (query, callback) {
+    Store.prototype.find = async function (query, callback) {
         if (!callback) {
             return;
         }
         var self = this;
 
-        this.findAll(function(todos) {
-          callback.call(self, todos.filter(function (todo) {
+        await this.findAll(async function(todos) {
+          await callback.call(self, todos.filter(function (todo) {
             for (var q in query) {
               if (query[q] !== todo[q]) {
                 return false;
@@ -189,25 +146,20 @@
      *
      * @param {function} callback The callback to fire upon retrieving data
      */
-    Store.prototype.findAll = function (callback) {
+    Store.prototype.findAll = async function (callback) {
         callback = callback || function () {};
         if (!this.db) {
           return;
         }
         var todos = [];
-        var self = this;
         var transaction = this.db.transaction(this._objectStoreName);
-        var objectStore = transaction.objectStore(this._objectStoreName);
-        objectStore.openCursor().onsuccess = function (event) {
-          var cursor = event.target.result;
-          if (cursor) {
+        transaction.objectStore(this._objectStoreName).iterateCursor(cursor => {
+            if (!cursor) return;
             todos.push(cursor.value);
             cursor.continue();
-          } else {
-            callback.call(self, todos);
-          }
-        };
-        // TODO implement onerror handler
+        });
+        await transaction.complete;
+        await callback.call(this, todos);
     };
 
     /**
@@ -218,42 +170,24 @@
      * @param {function} callback The callback to fire after saving
      * @param {number} id An optional param to enter an ID of an item to update
      */
-    Store.prototype.save = function (updateData, callback, id) {
+    Store.prototype.save = async function (updateData, callback, id) {
         callback = callback || function () {};
-        var self = this;
         var transaction = this.db.transaction(this._objectStoreName, 'readwrite');
-        transaction.oncomplete = function (event) {
-          callback.call(self);
-        };
         var objectStore = transaction.objectStore(this._objectStoreName);
         var request;
         if (id) {
-          request = objectStore.get(id);
-          request.onsuccess = function (event) {
-            var data = event.target.result;
-            for (var key in updateData) {
-              if (updateData.hasOwnProperty(key)) {
-                data[key] = updateData[key];
-              }
+          var data = await objectStore.get(id);
+          for (var key in updateData) {
+            if (updateData.hasOwnProperty(key)) {
+              data[key] = updateData[key];
             }
-            var request = objectStore.put(data);
-            request.onsuccess = function (event) {
-            };
-            request.onerror = function (event) {
-              throw DOMException(event.error);
-            };
-          };
-          request.onerror = function (event) {
-            throw DOMException(event.error);
-          };
+          }
+          await objectStore.put(data);
         } else {
-          request = objectStore.add(updateData);
-          request.onsuccess = function (event) {
-          };
-          request.onerror = function (event) {
-            throw DOMException(event.error);
-          };
+          await objectStore.add(updateData);
         }
+        await transaction.complete;
+        callback.call(this);
     };
 
     /**
@@ -262,16 +196,12 @@
      * @param {number} id The ID of the item you want to remove
      * @param {function} callback The callback to fire after saving
      */
-    Store.prototype.remove = function (id, callback) {
+    Store.prototype.remove = async function (id, callback) {
         var transaction = this.db.transaction(this._objectStoreName, 'readwrite');
-        transaction.oncomplete = function (event) {
-          callback.call(self);
-        };
         var objectStore = transaction.objectStore(this._objectStoreName);
-        var request = objectStore.delete(id);
-        var self = this;
-        request.onsuccess = function (event) {
-        };
+        await objectStore.delete(id);
+        await transaction.complete;
+        callback.call(this);
     };
 
     /**
@@ -279,19 +209,17 @@
      *
      * @param {function} callback The callback to fire after dropping the data
      */
-    Store.prototype.drop = function (callback) {
+    Store.prototype.drop = async function (callback) {
         var data = {todos: []};
 
-        var self = this;
-        this.findAll(function(todos) {
+        await this.findAll(async function(todos) {
           var transaction = this.db.transaction(this._objectStoreName, 'readwrite');
-          transaction.oncomplete = function (event) {
-            callback.call(self, data.todos);
-          };
           var objectStore = transaction.objectStore(this._objectStoreName);
           todos.forEach(function (todo) {
             objectStore.delete(todo.id);
           });
+          await transaction.complete;
+          callback.call(this, data.todos);
         });
     };
 

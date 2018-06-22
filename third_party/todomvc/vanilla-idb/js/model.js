@@ -40,7 +40,7 @@
      * @param {string} [title] The title of the task
      * @param {function} [callback] The callback to fire after the model is created
      */
-    Model.prototype.create = function (title, callback) {
+    Model.prototype.create = async function (title, callback) {
         title = title || '';
         callback = callback || function () {};
 
@@ -49,7 +49,7 @@
             completed: false
         };
 
-        this.storage.save(newItem, callback);
+        await this.storage.save(newItem, callback);
     };
 
     /**
@@ -67,18 +67,18 @@
      * //Below will find a model with foo equalling bar and hello equalling world.
      * model.read({ foo: 'bar', hello: 'world' });
      */
-    Model.prototype.read = function (query, callback) {
+    Model.prototype.read = async function (query, callback) {
         var queryType = typeof query;
         callback = callback || function () {};
 
         if (queryType === 'function') {
             callback = query;
-            return this.storage.findAll(callback);
+            return await this.storage.findAll(callback);
         } else if (queryType === 'string' || queryType === 'number') {
             query = parseInt(query, 10);
-            this.storage.find({ id: query }, callback);
+            await this.storage.find({ id: query }, callback);
         } else {
-            this.storage.find(query, callback);
+            await this.storage.find(query, callback);
         }
     };
 
@@ -90,8 +90,8 @@
      * @param {object} data The properties to update and their new value
      * @param {function} callback The callback to fire when the update is complete.
      */
-    Model.prototype.update = function (id, data, callback) {
-        this.storage.save(data, callback, id);
+    Model.prototype.update = async function (id, data, callback) {
+        await this.storage.save(data, callback, id);
     };
 
     /**
@@ -100,8 +100,8 @@
      * @param {number} id The ID of the model to remove
      * @param {function} callback The callback to fire when the removal is complete.
      */
-    Model.prototype.remove = function (id, callback) {
-        this.storage.remove(id, callback);
+    Model.prototype.remove = async function (id, callback) {
+        await this.storage.remove(id, callback);
     };
 
     /**
@@ -109,21 +109,21 @@
      *
      * @param {function} callback The callback to fire when the storage is wiped.
      */
-    Model.prototype.removeAll = function (callback) {
-        this.storage.drop(callback);
+    Model.prototype.removeAll = async function (callback) {
+        await this.storage.drop(callback);
     };
 
     /**
      * Returns a count of all todos
      */
-    Model.prototype.getCount = function (callback) {
+    Model.prototype.getCount = async function (callback) {
         var todos = {
             active: 0,
             completed: 0,
             total: 0
         };
 
-        this.storage.findAll(function (data) {
+        await this.storage.findAll(async function (data) {
             data.forEach(function (todo) {
                 if (todo.completed) {
                     todos.completed++;

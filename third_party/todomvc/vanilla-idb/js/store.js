@@ -67,13 +67,11 @@
           firstRun = true;
           upgradeDB.createObjectStore(self._objectStoreName, { keyPath: 'id', autoIncrement: true });
 
-          if (options.populated) {
-            var searchStore = upgradeDB.createObjectStore("search", { keyPath: "id", autoIncrement: true });
-            searchStore.createIndex("search_id", "id");
-            searchStore.createIndex("search_messageid_index", "messageId");
-            searchStore.createIndex("search_itemid_index", "itemId");
-            searchStore.createIndex("search_timestamp_index", "timestamp");
-          }
+          var searchStore = upgradeDB.createObjectStore("search", { keyPath: "id", autoIncrement: true });
+          searchStore.createIndex("search_id", "id");
+          searchStore.createIndex("search_messageid_index", "messageId");
+          searchStore.createIndex("search_itemid_index", "itemId");
+          searchStore.createIndex("search_timestamp_index", "timestamp");
         });
 
         if (firstRun && options.populated) {

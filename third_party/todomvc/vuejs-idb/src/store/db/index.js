@@ -21,23 +21,14 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/*jshint eqeqeq:false */
-(function (window) {
-  'use strict';
-
-  var ID = 1;
-
+export default class {
   /**
    * Creates a new client side storage object and will create an empty
    * collection if no collection already exists.
    *
    * @param {string} name The name of our DB we want to use
-   * @param {function} callback Our fake DB uses callbacks because in
-   * real life you probably would be making AJAX calls
    */
-  function Store(name, callback) {
-    callback = callback || function () {};
-
+  constructor(name) {
     this._dbName = name;
     this._objectStoreName = 'todos';
   }
@@ -47,7 +38,7 @@
    * @param {function} callback The callback to fire when the init
    * has completed
    */
-  Store.prototype.deleteDatabase = async function (callback) {
+  async deleteDatabase(callback) {
     callback = callback || function () {};
     await idb.delete(this._dbName);
     callback(this);
@@ -60,7 +51,7 @@
    * @param {function} callback The callback to fire when the init
    * has completed
    */
-  Store.prototype.open = async function (options, callback) {
+  async open(options, callback) {
     var self = this;
     var firstRun = false;
     self.db = await idb.open(this._dbName, 1, upgradeDB => {
@@ -91,7 +82,7 @@
   /**
    * Populates a database
    */
-  Store.prototype.populate = async function () {
+  async populate() {
     var transaction = this.db.transaction(['search'], 'readwrite');
     var searchStore = transaction.objectStore('search');
 
@@ -112,7 +103,7 @@
   /**
    * Closes a database
    */
-  Store.prototype.closeDatabase = function () {
+  closeDatabase() {
     this.db.close();
   }
 
@@ -129,7 +120,7 @@
    *     // hello: world in their properties
    * });
    */
-  Store.prototype.find = async function (query, callback) {
+  async find(query, callback) {
     if (!callback) {
       return;
     }
@@ -145,14 +136,14 @@
         return true;
       }));
     });
-  };
+  }
 
   /**
    * Will retrieve all data from the collection
    *
    * @param {function} callback The callback to fire upon retrieving data
    */
-  Store.prototype.findAll = async function (callback) {
+  async findAll(callback) {
     callback = callback || function () {};
     if (!this.db) {
       return;
@@ -166,7 +157,7 @@
     });
     await transaction.complete;
     await callback.call(this, todos);
-  };
+  }
 
   /**
    * Will save the given data to the DB. If no item exists it will create a new
@@ -176,7 +167,7 @@
    * @param {function} callback The callback to fire after saving
    * @param {number} id An optional param to enter an ID of an item to update
    */
-  Store.prototype.save = async function (updateData, callback, id) {
+  async save(updateData, callback, id) {
     callback = callback || function () {};
     var transaction = this.db.transaction(this._objectStoreName, 'readwrite');
     var objectStore = transaction.objectStore(this._objectStoreName);
@@ -194,7 +185,7 @@
     }
     await transaction.complete;
     callback.call(this);
-  };
+  }
 
   /**
    * Will remove an item from the Store based on its ID
@@ -202,20 +193,20 @@
    * @param {number} id The ID of the item you want to remove
    * @param {function} callback The callback to fire after saving
    */
-  Store.prototype.remove = async function (id, callback) {
+  async remove(id, callback) {
     var transaction = this.db.transaction(this._objectStoreName, 'readwrite');
     var objectStore = transaction.objectStore(this._objectStoreName);
     await objectStore.delete(id);
     await transaction.complete;
     callback.call(this);
-  };
+  }
 
   /**
    * Will drop all storage and start fresh
    *
    * @param {function} callback The callback to fire after dropping the data
    */
-  Store.prototype.drop = async function (callback) {
+  async drop(callback) {
     var data = {
       todos: []
     };
@@ -229,9 +220,5 @@
       await transaction.complete;
       callback.call(this, data.todos);
     });
-  };
-
-  // Export to window
-  window.app = window.app || {};
-  window.app.Store = Store;
-})(window);
+  }
+}

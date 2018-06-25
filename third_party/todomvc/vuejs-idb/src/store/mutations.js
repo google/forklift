@@ -1,6 +1,8 @@
-export const STORAGE_KEY = 'todos-vuejs';
-
 export const mutations = {
+  initializeTodos(state, payload) {
+    state.todos = payload;
+  },
+
   addTodo(state, todo) {
     state.todos.push(todo);
   },

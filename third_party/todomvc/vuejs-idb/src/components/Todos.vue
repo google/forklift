@@ -98,6 +98,9 @@ export default {
       },
     },
   },
+  beforeMount() {
+    this.$store.dispatch('asyncStoreInit');
+  },
   methods: {
     ...mapActions(['clearCompleted']),
   },

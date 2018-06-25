@@ -1,41 +1,37 @@
 export default {
-  addTodo({commit}, text) {
-    commit('addTodo', {
-      text,
-      done: false,
-    });
+  async asyncStoreInit({state, commit}) {
+    await state.db.open({populated: false});
+    let res = await state.db.findAll();
+    commit('initializeTodos', res);
   },
 
-  removeTodo({commit}, todo) {
+  async addTodo({state, commit}, text) {
+    let todo = {text, done: false};
+    todo.id = await state.db.save(todo);
+    commit('addTodo', todo);
+  },
+
+  async removeTodo({state, commit}, todo) {
+    await state.db.remove(todo.id);
     commit('removeTodo', todo);
   },
 
-  toggleTodo({commit}, todo) {
-    commit('editTodo', {
-      todo,
-      done: !todo.done,
-    });
+  async toggleTodo({state, commit}, todo) {
+    todo.done = !todo.done;
+    state.db.save(todo, todo.id);
+    commit('editTodo', {todo});
   },
 
-  editTodo({commit}, {todo, value}) {
-    commit('editTodo', {
-      todo,
-      text: value,
-    });
+  async editTodo({state, commit}, {todo, value}) {
+    todo.text = value;
+    await state.db.save(todo, todo.id);
+    commit('editTodo', {todo});
   },
 
-  toggleAll({state, commit}, done) {
-    state.todos.forEach((todo) => {
-      commit('editTodo', {
-        todo,
-        done,
-      });
-    });
-  },
-
-  clearCompleted({state, commit}) {
-    state.todos.filter((todo) => todo.done).forEach((todo) => {
-      commit('removeTodo', todo);
-    });
+  async clearCompleted({state, commit, dispatch}) {
+    let filtered = state.todos.filter((todo) => todo.done);
+    for (let todo of filtered) {
+      await dispatch('removeTodo', todo);
+    }
   },
 };

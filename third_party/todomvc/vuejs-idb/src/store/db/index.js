@@ -3,24 +3,31 @@
  *
  * Copyright (c) Addy Osmani, Sindre Sorhus, Pascal Hartig, Stephen Sawchuk.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
  */
 
+import idb from '../../../../../idbpromised/idb';
+
+/**
+ * The DB class is an ES6/ES7 promises-capable IndexedDB wrapper class
+ * that implements TodoMVC-modeled storage.
+ */
 export default class {
   /**
    * Creates a new client side storage object and will create an empty
@@ -39,7 +46,7 @@ export default class {
    * has completed
    */
   async deleteDatabase(callback) {
-    callback = callback || function () {};
+    callback = callback || function() {};
     await idb.delete(this._dbName);
     callback(this);
   }
@@ -52,30 +59,31 @@ export default class {
    * has completed
    */
   async open(options, callback) {
-    var self = this;
-    var firstRun = false;
-    self.db = await idb.open(this._dbName, 1, upgradeDB => {
+    callback = callback || function() {};
+    let self = this;
+    let firstRun = false;
+    self.db = await idb.open(this._dbName, 1, (upgradeDB) => {
       firstRun = true;
       upgradeDB.createObjectStore(self._objectStoreName, {
         keyPath: 'id',
-        autoIncrement: true
+        autoIncrement: true,
       });
 
-      var searchStore = upgradeDB.createObjectStore("search", {
-        keyPath: "id",
-        autoIncrement: true
+      let searchStore = upgradeDB.createObjectStore('search', {
+        keyPath: 'id',
+        autoIncrement: true,
       });
-      searchStore.createIndex("search_id", "id");
-      searchStore.createIndex("search_messageid_index", "messageId");
-      searchStore.createIndex("search_itemid_index", "itemId");
-      searchStore.createIndex("search_timestamp_index", "timestamp");
+      searchStore.createIndex('search_id', 'id');
+      searchStore.createIndex('search_messageid_index', 'messageId');
+      searchStore.createIndex('search_itemid_index', 'itemId');
+      searchStore.createIndex('search_timestamp_index', 'timestamp');
     });
 
     if (firstRun && options.populated) {
       await self.populate();
     }
     callback(self, {
-      todos: []
+      todos: [],
     });
   }
 
@@ -83,17 +91,17 @@ export default class {
    * Populates a database
    */
   async populate() {
-    var transaction = this.db.transaction(['search'], 'readwrite');
-    var searchStore = transaction.objectStore('search');
+    let transaction = this.db.transaction(['search'], 'readwrite');
+    let searchStore = transaction.objectStore('search');
 
     let numSearch = 100000;
 
-    for (var i = 0; i < numSearch; i++) {
-      var searchItem = {
+    for (let i = 0; i < numSearch; i++) {
+      let searchItem = {
         name: `Search ${i}`,
         messageId: `Message ${i}`,
         itemId: `Item ${i}`,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
       await searchStore.put(searchItem);
     }
@@ -124,17 +132,20 @@ export default class {
     if (!callback) {
       return;
     }
-    var self = this;
+    let self = this;
 
-    await this.findAll(async function (todos) {
-      await callback.call(self, todos.filter(function (todo) {
-        for (var q in query) {
-          if (query[q] !== todo[q]) {
-            return false;
+    await this.findAll(async function(todos) {
+      await callback.call(
+        self,
+        todos.filter(function(todo) {
+          for (let q in query) {
+            if (query[q] !== todo[q]) {
+              return false;
+            }
           }
-        }
-        return true;
-      }));
+          return true;
+        }),
+      );
     });
   }
 
@@ -142,21 +153,23 @@ export default class {
    * Will retrieve all data from the collection
    *
    * @param {function} callback The callback to fire upon retrieving data
+   * @return {Array} list of todos
    */
   async findAll(callback) {
-    callback = callback || function () {};
+    callback = callback || function() {};
     if (!this.db) {
       return;
     }
-    var todos = [];
-    var transaction = this.db.transaction(this._objectStoreName);
-    transaction.objectStore(this._objectStoreName).iterateCursor(cursor => {
+    let todos = [];
+    let transaction = this.db.transaction(this._objectStoreName);
+    transaction.objectStore(this._objectStoreName).iterateCursor((cursor) => {
       if (!cursor) return;
       todos.push(cursor.value);
       cursor.continue();
     });
     await transaction.complete;
     await callback.call(this, todos);
+    return todos;
   }
 
   /**
@@ -168,13 +181,12 @@ export default class {
    * @param {number} id An optional param to enter an ID of an item to update
    */
   async save(updateData, callback, id) {
-    callback = callback || function () {};
-    var transaction = this.db.transaction(this._objectStoreName, 'readwrite');
-    var objectStore = transaction.objectStore(this._objectStoreName);
-    var request;
+    callback = callback || function() {};
+    let transaction = this.db.transaction(this._objectStoreName, 'readwrite');
+    let objectStore = transaction.objectStore(this._objectStoreName);
     if (id) {
-      var data = await objectStore.get(id);
-      for (var key in updateData) {
+      let data = await objectStore.get(id);
+      for (let key in updateData) {
         if (updateData.hasOwnProperty(key)) {
           data[key] = updateData[key];
         }
@@ -194,8 +206,8 @@ export default class {
    * @param {function} callback The callback to fire after saving
    */
   async remove(id, callback) {
-    var transaction = this.db.transaction(this._objectStoreName, 'readwrite');
-    var objectStore = transaction.objectStore(this._objectStoreName);
+    let transaction = this.db.transaction(this._objectStoreName, 'readwrite');
+    let objectStore = transaction.objectStore(this._objectStoreName);
     await objectStore.delete(id);
     await transaction.complete;
     callback.call(this);
@@ -207,18 +219,19 @@ export default class {
    * @param {function} callback The callback to fire after dropping the data
    */
   async drop(callback) {
-    var data = {
-      todos: []
+    let data = {
+      todos: [],
     };
+    let self = this;
 
-    await this.findAll(async function (todos) {
-      var transaction = this.db.transaction(this._objectStoreName, 'readwrite');
-      var objectStore = transaction.objectStore(this._objectStoreName);
-      todos.forEach(function (todo) {
+    await this.findAll(async function(todos) {
+      let transaction = self.db.transaction(self._objectStoreName, 'readwrite');
+      let objectStore = transaction.objectStore(self._objectStoreName);
+      todos.forEach(function(todo) {
         objectStore.delete(todo.id);
       });
       await transaction.complete;
-      callback.call(this, data.todos);
+      callback.call(self, data.todos);
     });
   }
 }

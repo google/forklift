@@ -34,4 +34,16 @@ export default {
       await dispatch('removeTodo', todo);
     }
   },
+
+  async openDatabase({state}, options) {
+    await state.db.open(options);
+  },
+
+  closeDatabase({state}) {
+    state.db.closeDatabase();
+  },
+
+  async deleteDatabase({state}) {
+    await state.db.deleteDatabase();
+  },
 };

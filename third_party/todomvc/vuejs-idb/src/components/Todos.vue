@@ -99,7 +99,15 @@ export default {
     },
   },
   beforeMount() {
-    this.$store.dispatch('asyncStoreInit');
+    // Only auto-open the DB if ?open=0 is not passed in the URL.
+    let openDB = true;
+    const parsedUrl = new URL(window.location.href);
+    if (parsedUrl.searchParams.get('open') === '0') {
+      openDB = false;
+    }
+    if (openDB) {
+      this.$store.dispatch('asyncStoreInit');
+    }
   },
   methods: {
     ...mapActions(['clearCompleted']),

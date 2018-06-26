@@ -177,13 +177,13 @@ export default class {
    * item, otherwise it'll simply update an existing item's properties
    *
    * @param {object} updateData The data to save back into the DB
-   * @param {function} callback The callback to fire after saving
    * @param {number} id An optional param to enter an ID of an item to update
+   * @return {number} The id of the item that was just added or updated
    */
-  async save(updateData, callback, id) {
-    callback = callback || function() {};
+  async save(updateData, id) {
     let transaction = this.db.transaction(this._objectStoreName, 'readwrite');
     let objectStore = transaction.objectStore(this._objectStoreName);
+    let res;
     if (id) {
       let data = await objectStore.get(id);
       for (let key in updateData) {
@@ -191,12 +191,12 @@ export default class {
           data[key] = updateData[key];
         }
       }
-      await objectStore.put(data);
+      res = await objectStore.put(data);
     } else {
-      await objectStore.add(updateData);
+      res = await objectStore.add(updateData);
     }
     await transaction.complete;
-    callback.call(this);
+    return res;
   }
 
   /**
@@ -206,6 +206,7 @@ export default class {
    * @param {function} callback The callback to fire after saving
    */
   async remove(id, callback) {
+    callback = callback || function() {};
     let transaction = this.db.transaction(this._objectStoreName, 'readwrite');
     let objectStore = transaction.objectStore(this._objectStoreName);
     await objectStore.delete(id);

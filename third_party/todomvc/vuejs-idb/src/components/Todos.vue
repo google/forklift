@@ -98,7 +98,7 @@ export default {
       },
     },
   },
-  beforeMount() {
+  created() {
     // Only auto-open the DB if ?open=0 is not passed in the URL.
     let openDB = true;
     const parsedUrl = new URL(window.location.href);

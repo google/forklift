@@ -1,4 +1,4 @@
-export const mutations = {
+export default {
   initializeTodos(state, payload) {
     state.todos = payload;
   },

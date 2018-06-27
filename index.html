@@ -11,12 +11,17 @@
   <meta name="description" content="Forklift Benchmark">
   <meta name="author" content="Chrome Storage Team Google">
   <!-- Forklift benchmark code -->
-  <script type="text/javascript" src="js/base.js"></script>
-  <script type="text/javascript" src="js/vanilla_lifecycle.js"></script>
-  <script type="text/javascript" src="js/vanilla_emptydb.js"></script>
-  <script type="text/javascript" src="js/vanilla_largedb.js"></script>
-  <script type="text/javascript" src="js/vanilla_largedb_compact.js"></script>
-  <script type="text/javascript" src="js/vanilla_populatethroughapp.js"></script>
+  <script>
+    function addScript(script) {
+      document.write(`<script src=${script}?=${Date.now()}><\/script>`);
+    }
+    addScript("js/base.js");
+    addScript("js/vanilla_lifecycle.js");
+    addScript("js/vanilla_emptydb.js");
+    addScript("js/vanilla_largedb.js");
+    addScript("js/vanilla_largedb_compact.js");
+    addScript("js/vanilla_populatethroughapp.js");
+  </script>
 
   <script type="text/javascript">
     var completed = 0;

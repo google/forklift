@@ -96,7 +96,11 @@
           itemId: `Item ${i}`,
           timestamp: Date.now()
         };
-        await searchStore.put(searchItem);
+        if (i%2000 === 0) {
+          await searchStore.put(searchItem)
+        } else {
+          searchStore.put(searchItem);
+        }
       }
       await transaction.complete;
     }

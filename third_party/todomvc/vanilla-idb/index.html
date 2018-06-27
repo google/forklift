@@ -40,13 +40,18 @@
             <p>Refactored by <a href="https://github.com/cburgmer">Christoph Burgmer</a></p>
             <p>IndexedDB port by Chase Phillips</p>
         </footer>
-        <script src="js/helpers.js"></script>
-        <script src="../../idbpromised/idb.js"></script>
-        <script src="js/store.js"></script>
-        <script src="js/model.js"></script>
-        <script src="js/template.js"></script>
-        <script src="js/view.js"></script>
-        <script src="js/controller.js"></script>
-        <script src="js/app.js"></script>
+        <script>
+          function addScript(script) {
+            document.write(`<script src=${script}?=${Date.now()}><\/script>`);
+          }
+          addScript("js/helpers.js");
+          addScript("../../idbpromised/idb.js");
+          addScript("js/store.js");
+          addScript("js/model.js");
+          addScript("js/template.js");
+          addScript("js/view.js");
+          addScript("js/controller.js");
+          addScript("js/app.js");
+        </script>
     </body>
 </html>

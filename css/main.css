@@ -1,0 +1,13 @@
+/* added styles by Forklift */
+
+div.iframe-holder {
+  border: 1px solid black;
+  min-height: 500px;
+}
+
+iframe {
+  border: none;
+  min-height: 500px;
+  overflow: hidden;
+  width: 100%;
+}

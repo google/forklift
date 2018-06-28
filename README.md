@@ -1,9 +1,25 @@
-# Octane
+# Forklift
 
-Octane 2.0 is a benchmark that measures a JavaScript engine’s performance by running a suite of tests representative of certain use cases in JavaScript applications.
+An IndexedDB-specific macrobenchmark that lets us measure progress,
+guide future optimizations, and detect and respond to stability and
+performance regressions in IndexedDB implementations.
 
-Please note that [Octane is retired](https://v8project.blogspot.com/2017/04/retiring-octane.html) and no longer maintained.
+## Usage
 
-[Run Octane 2 now!](http://chromium.github.io/octane/)
+Check out the repository to a web server root and access it using your
+web browser.  Click "Start Forklift" to start the benchmark.
 
-For more information, check out the [homepage](https://developers.google.com/octane/), [benchmark reference](https://developers.google.com/octane/benchmark), or [FAQ](https://developers.google.com/octane/faq).
+## Prerequisites
+
+* A web browser with IndexedDB and ES7 support.
+
+* A web server that allows browser access to the benchmark site via
+http:// or https://, since some IndexedDB implementations do not support
+file:// origin loads.
+
+## Limitations
+
+This first edition of the benchmark was tested in the latest stable
+versions of Chrome, Safari, and Firefox.  If you test it in other
+settings, feel free to file an issue and we will update our docs with
+what you have found.

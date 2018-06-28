@@ -31,8 +31,10 @@
       typeof skipBenchmarks === "undefined" ? [] : skipBenchmarks;
 
     function ShowBox(name) {
+      completed++;
+      document.getElementById("main-banner").innerHTML = `Running Forklift...<br>Step ${completed} of ${benchmarks} / ${name}`;
       var bar = document.getElementById("progress-bar").style.width = "" +
-        ((++completed) / benchmarks) * 100 + "%";
+        ((completed) / benchmarks) * 100 + "%";
     }
 
     function AddResult(name, result) {}

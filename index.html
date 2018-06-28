@@ -76,62 +76,43 @@
   </script>
   <!-- end Forklift benchmark code -->
 
-  <!-- Le styles -->
+  <link href="css/main.css" rel="stylesheet">
   <link href="third_party/bootstrap/bootstrap.css" rel="stylesheet">
-  <style>
-    body {
-      padding-top: 60px;
-      /* 60px to make the container go all the way to the bottom of the topbar */
-    }
-  </style>
-  <link href="third_party/bootstrap/bootstrap-responsive.css" rel="stylesheet">
-
-  <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
-  <!--[if lt IE 9]>
-      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
-<![endif]-->
 </head>
 
 <body>
 
-  <div class="navbar navbar-fixed-top">
-    <div class="navbar-inner">
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="#">Forklift</a>
+  </nav>
 
-      <div class="container">
-
-        <a class="brand" href="#">Forklift</a>
-        <!--/.nav-collapse -->
+  <div class="jumbotron">
+    <div class="container">
+      <div class="alert alert-warning" role="alert" style="display:none" id="alertbox">
+        <strong>Warning</strong> This JavaScript engine does not support Typed Arrays. You might want to run the
+        <a href="http://v8.googlecode.com/svn/data/benchmarks/v7/run.html">V8 benchmark v7</a> instead.
+      </div>
+      <div id="main-container">
+        <a id="run-forklift" href="javascript:Run()">
+          <div id="inside-anchor">
+            <h1 align="center" id="main-banner">Start Forklift</h1>
+            <div id="bar-appendix"></div>
+          </div>
+        </a>
       </div>
 
-    </div>
-  </div>
+      <div id="startup-text" style="color: black;" align="center"></div>
 
-  <div class="container">
-    <div class="alert" style="display:none" id="alertbox">
-      <strong>Warning</strong> This JavaScript engine does not support Typed Arrays. You might want to run the
-      <a href="http://v8.googlecode.com/svn/data/benchmarks/v7/run.html">V8 benchmark v7</a> instead.
-    </div>
-    <div id="main-container">
-      <a id="run-forklift" href="javascript:Run()">
-        <div class="hero-unit" id="inside-anchor">
-          <h1 align="center" id="main-banner">Start Forklift</h1>
-          <div id="bar-appendix"></div>
-        </div>
-      </a>
-    </div>
+      <div class="header"></div>
 
-    <div id="startup-text" style="color: black;" align="center"></div>
+      <div id="iframe-holder" style="visibility:hidden" align="center">
+      </div>
 
-    <div class="header"></div>
+      <div id="bottom-text" style="color:black; visibility:hidden" align="center">
+      </div>
 
-    <div id="iframe-holder" class="iframe-holder" style="visibility:hidden" align="center">
-    </div>
-
-    <div id="bottom-text" style="color:black; visibility:hidden" align="center">
-    </div>
-
-  </div>
-  <!-- /container -->
+    </div> <!-- /container -->
+  </div> <!-- /jumbotron -->
 
 </body>
 

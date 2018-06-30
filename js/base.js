@@ -213,16 +213,13 @@ BenchmarkSuite.RunIterations = async function (runner, suite) {
     });
   }
 
+  var scaling = suite.scaling ? suite.scaling : 1;
+  var result = BenchmarkSuite.GeometricMean(suite.results) * scaling;
   if (tuningMode) {
-    console.log(`suite ${suite.name} results = ${JSON.stringify(suite.results)}`);
-  }
-  var result = BenchmarkSuite.GeometricMean(suite.results);
-  if (tuningMode) {
-    console.log(`suite ${suite.name} geometric mean result = ${result}`);
-  }
-  if (suite.scaling) result *= suite.scaling;
-  if (tuningMode) {
-    console.log(`suite ${suite.name} scaled result = ${result}`);
+    console.log(suite.name);
+    console.log(`results: ${JSON.stringify(suite.results)}`);
+    console.log(`mean result: ${result/scaling}`);
+    console.log(`scaled result: ${result}`);
   }
   return result;
 }

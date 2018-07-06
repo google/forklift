@@ -26,11 +26,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function () {
-  var VanillaLifecycle = new BenchmarkSuite('VanillaLifecycle', 16.92,
+  BenchmarkSuite.Add(new BenchmarkSuite('VanillaLifecycle', 16.92,
     'third_party/todomvc/vanilla-idb/index.html?open=0',
     new Benchmark("VanillaLifecycle", [Setup, AddItems, CompleteAllItems, DeleteAllItems])
-  );
-  BenchmarkSuite.Add(VanillaLifecycle);
+  ));
 
   // Configuration.
   var numberOfItemsToAdd = 10;

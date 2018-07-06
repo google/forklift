@@ -26,11 +26,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function () {
-  var VanillaPopulateThroughApp = new BenchmarkSuite('VanillaPopulateThroughApp', 975.21,
+  BenchmarkSuite.Add(new BenchmarkSuite('VanillaPopulateThroughApp', 975.21,
     'third_party/todomvc/vanilla-idb/index.html?open=0',
     new Benchmark("VanillaPopulateThroughApp", [Setup, OpenDatabase])
-  );
-  BenchmarkSuite.Add(VanillaPopulateThroughApp);
+  ));
 
   // Configuration.
   var numberOfItemsToAdd = 100;

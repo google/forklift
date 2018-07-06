@@ -26,11 +26,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function () {
-  var VanillaLargeDBCompact = new BenchmarkSuite('VanillaLargeDBCompact', 814.65,
+  BenchmarkSuite.Add(new BenchmarkSuite('VanillaLargeDBCompact', 814.65,
     'third_party/todomvc/vanilla-idb/index.html?open=0',
     new Benchmark("VanillaLargeDBCompact", [Setup, OpenDatabase])
-  );
-  BenchmarkSuite.Add(VanillaLargeDBCompact);
+  ));
 
   async function Setup(iframe) {
     let thisIframe = iframe;

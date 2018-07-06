@@ -26,11 +26,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function () {
-  var VanillaEmptyDB = new BenchmarkSuite('VanillaEmptyDB', 1049.12,
+  BenchmarkSuite.Add(new BenchmarkSuite('VanillaEmptyDB', 1049.12,
     'third_party/todomvc/vanilla-idb/index.html?open=0',
     new Benchmark("VanillaEmptyDB", [Setup, OpenDatabase])
-  );
-  BenchmarkSuite.Add(VanillaEmptyDB);
+  ));
 
   async function Setup(iframe) {
     await iframe.contentWindow.todo.storage.deleteDatabase();

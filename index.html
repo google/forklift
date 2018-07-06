@@ -15,12 +15,12 @@
     function addScript(script) {
       document.write(`<script src=${script}?=${Date.now()}><\/script>`);
     }
-    addScript("js/base.js");
-    addScript("js/vanilla_lifecycle.js");
-    addScript("js/vanilla_emptydb.js");
-    addScript("js/vanilla_largedb.js");
-    addScript("js/vanilla_largedb_compact.js");
-    addScript("js/vanilla_populatethroughapp.js");
+    addScript('js/base.js');
+    addScript('js/vanilla_lifecycle.js');
+    addScript('js/vanilla_emptydb.js');
+    addScript('js/vanilla_largedb.js');
+    addScript('js/vanilla_largedb_compact.js');
+    addScript('js/vanilla_populatethroughapp.js');
   </script>
 
   <script type="text/javascript">
@@ -30,18 +30,18 @@
 
     function ShowBox(benchmarkName, stepName) {
       completed++;
-      document.getElementById("main-banner").innerHTML = `Running Forklift...<br>${benchmarkName}.${stepName}`;
-      document.getElementById("progress-bar").style.width = "" +
-        ((completed) / steps) * 100 + "%";
+      document.getElementById('main-banner').innerHTML = `Running Forklift...<br>${benchmarkName}.${stepName}`;
+      document.getElementById('progress-bar').style.width = `
+        ${((completed) / steps) * 100}%`;
     }
 
     function AddResult(name, result) {}
 
     function AddError(name, error) {
-      console.log(name + ": " + error.message);
-      if (error == "TypedArrayUnsupported") {
+      console.log(name + ': ' + error.message);
+      if (error == 'TypedArrayUnsupported') {
         AddResult(name, '<b>Unsupported<\/b>');
-      } else if (error == "PerformanceNowUnsupported") {
+      } else if (error == 'PerformanceNowUnsupported') {
         AddResult(name, '<b>Timer error<\/b>');
       } else {
         AddResult(name, '<b>Error</b>');
@@ -50,31 +50,31 @@
     }
 
     function AddCycles(score) {
-      const status = document.getElementById("main-banner");
+      const status = document.getElementById('main-banner');
       if (success) {
-        status.innerHTML = "Forklift Cycles: " + score;
+        status.innerHTML = `Forklift Cycles: ${score}`;
       } else {
-        status.innerHTML = "Forklift Cycles (incomplete): " + score;
+        status.innerHTML = `Forklift Cycles (incomplete): ${score}`;
       }
-      document.getElementById("progress-bar-container").style.visibility = 'hidden';
-      document.getElementById("bottom-text").style.visibility = 'visible';
-      document.getElementById("inside-anchor").removeChild(document.getElementById("bar-appendix"));
-      document.getElementById("alertbox").style.visibility = 'hidden';
+      document.getElementById('progress-bar-container').style.visibility = 'hidden';
+      document.getElementById('bottom-text').style.visibility = 'visible';
+      document.getElementById('inside-anchor').removeChild(document.getElementById('bar-appendix'));
+      document.getElementById('alertbox').style.visibility = 'hidden';
     }
 
     function Run() {
-      document.getElementById("main-banner").innerHTML = "Running Forklift...";
+      document.getElementById('main-banner').innerHTML = 'Running Forklift...';
       // append the progress bar elements..
-      document.getElementById("bar-appendix").innerHTML =
-        "<br/><div class=\"progress\" id=\"progress-bar-container\" style=\"visibility:hidden\"><div class=\"progress-bar\" role=\"progressbar\" style=\"width: 0%;\" id=\"progress-bar\"></div></div>";
-      const anchor = document.getElementById("run-forklift");
-      const parent = document.getElementById("main-container");
-      parent.appendChild(document.getElementById("inside-anchor"));
+      document.getElementById('bar-appendix').innerHTML =
+        `<br/><div class="progress" id="progress-bar-container" style="visibility:hidden"><div class="progress-bar" role="progressbar" style="width: 0%;" id="progress-bar"></div></div>`;
+      const anchor = document.getElementById('run-forklift');
+      const parent = document.getElementById('main-container');
+      parent.appendChild(document.getElementById('inside-anchor'));
       parent.removeChild(anchor);
 
-      document.getElementById("startup-text").innerHTML = "";
+      document.getElementById('startup-text').innerHTML = '';
 
-      document.getElementById("progress-bar-container").style.visibility = 'visible';
+      document.getElementById('progress-bar-container').style.visibility = 'visible';
 
       Benchmark.RunBenchmarks({
         NotifyStart: ShowBox,

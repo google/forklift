@@ -203,30 +203,6 @@ async function pageLoaded(iframe) {
   }
 }
 
-BenchmarkSuite.RunIterations = async function (runner, suite) {
-  var self = this;
-  suite.results = [];
-
-  for (var i = 0; i < numberOfIterations; i++) {
-    BenchmarkSuite.recycleIframe({create: true});
-    await navigateIframe(suite.src, async function () {
-      await pageLoaded(self.iframe);
-      var result = await suite.RunSteps(runner);
-      suite.NotifyStep(new BenchmarkResult(this.benchmark, result));
-    });
-  }
-
-  var scaling = suite.scaling ? suite.scaling : 1;
-  var result = BenchmarkSuite.GeometricMean(suite.results) * scaling;
-  if (tuningMode) {
-    console.log(suite.name);
-    console.log(`results: ${JSON.stringify(suite.results)}`);
-    console.log(`mean result: ${result/scaling}`);
-    console.log(`scaled result: ${result}`);
-  }
-  return result;
-}
-
 function checkTuning(suite, result) {
   if (!tuningMode) {
     return;
@@ -239,33 +215,6 @@ function checkTuning(suite, result) {
     console.log(`WARNING: ${suite.name}'s result ${result} is too low, scaling should be set to ${tuningTarget/originalResult}`);
   } else if (result > tuningTarget * 1.05) {
     console.log(`WARNING: ${suite.name}'s result ${result} is too high, scaling should be set to ${tuningTarget/originalResult}`);
-  }
-}
-
-// Runs all registered benchmark suites and optionally yields between
-// each individual benchmark to avoid running for too long in the
-// context of browsers. Once done, the final score is reported to the
-// runner.
-BenchmarkSuite.RunSuites = async function (runner) {
-  BenchmarkSuite.scores = [];
-
-  for (var suite of BenchmarkSuite.suites) {
-    var result = await BenchmarkSuite.RunIterations(runner, suite);
-    checkTuning(suite, result);
-    suite.NotifyResult(result);
-  }
-
-  // We've completed all of the steps, so update the progress bar and
-  // sleep briefly to let the UI update.
-  BenchmarkSuite.recycleIframe({create: false});
-  if (runner.NotifyStart) runner.NotifyStart('Wrapping up');
-  await sleep(100);
-
-  // show final result
-  if (runner.NotifyScore) {
-    var score = BenchmarkSuite.GeometricMean(BenchmarkSuite.scores);
-    var formatted = BenchmarkSuite.FormatScore(score);
-    runner.NotifyScore(formatted);
   }
 }
 
@@ -322,7 +271,6 @@ BenchmarkSuite.prototype.NotifyStep = function (result) {
   if (this.runner.NotifyStep) this.runner.NotifyStep(result.benchmark.name);
 }
 
-
 // Notifies the runner that we're done with running a suite and that
 // we have a result which can be reported to the user if needed.
 BenchmarkSuite.prototype.NotifyResult = function (result) {
@@ -333,14 +281,12 @@ BenchmarkSuite.prototype.NotifyResult = function (result) {
   }
 }
 
-
 BenchmarkSuite.prototype.NotifySkipped = function (runner) {
   BenchmarkSuite.scores.push(1); // push default reference score.
   if (runner.NotifyResult) {
     runner.NotifyResult(this.name, "Skipped");
   }
 }
-
 
 // Notifies the runner that running a benchmark resulted in an error.
 BenchmarkSuite.prototype.NotifyError = function (error) {
@@ -351,7 +297,6 @@ BenchmarkSuite.prototype.NotifyError = function (error) {
     this.runner.NotifyStep(this.name);
   }
 }
-
 
 // This function runs a suite and calculates the amount of time taken
 // to complete the step.
@@ -371,4 +316,55 @@ BenchmarkSuite.prototype.RunSteps = async function (runner) {
   }
 
   return elapsed;
+}
+
+BenchmarkSuite.RunIterations = async function (runner, suite) {
+  var self = this;
+  suite.results = [];
+
+  for (var i = 0; i < numberOfIterations; i++) {
+    BenchmarkSuite.recycleIframe({create: true});
+    await navigateIframe(suite.src, async function () {
+      await pageLoaded(self.iframe);
+      var result = await suite.RunSteps(runner);
+      suite.NotifyStep(new BenchmarkResult(this.benchmark, result));
+    });
+  }
+
+  var scaling = suite.scaling ? suite.scaling : 1;
+  var result = BenchmarkSuite.GeometricMean(suite.results) * scaling;
+  if (tuningMode) {
+    console.log(suite.name);
+    console.log(`results: ${JSON.stringify(suite.results)}`);
+    console.log(`mean result: ${result/scaling}`);
+    console.log(`scaled result: ${result}`);
+  }
+  return result;
+}
+
+// Runs all registered benchmark suites and optionally yields between
+// each individual benchmark to avoid running for too long in the
+// context of browsers. Once done, the final score is reported to the
+// runner.
+BenchmarkSuite.RunSuites = async function (runner) {
+  BenchmarkSuite.scores = [];
+
+  for (var suite of BenchmarkSuite.suites) {
+    var result = await BenchmarkSuite.RunIterations(runner, suite);
+    checkTuning(suite, result);
+    suite.NotifyResult(result);
+  }
+
+  // We've completed all of the steps, so update the progress bar and
+  // sleep briefly to let the UI update.
+  BenchmarkSuite.recycleIframe({create: false});
+  if (runner.NotifyStart) runner.NotifyStart('Wrapping up');
+  await sleep(100);
+
+  // show final result
+  if (runner.NotifyScore) {
+    var score = BenchmarkSuite.GeometricMean(BenchmarkSuite.scores);
+    var formatted = BenchmarkSuite.FormatScore(score);
+    runner.NotifyScore(formatted);
+  }
 }

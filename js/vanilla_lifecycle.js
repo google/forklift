@@ -28,10 +28,10 @@
 (function () {
   BenchmarkSuite.Add(new BenchmarkSuite('VanillaLifecycle', 16.92,
     'third_party/todomvc/vanilla-idb/index.html?open=0',
-    [new BenchmarkStep('Setup', Setup),
-     new BenchmarkStep('AddItems', AddItems),
-     new BenchmarkStep('CompleteAllItems', CompleteAllItems),
-     new BenchmarkStep('DeleteAllItems', DeleteAllItems)],
+    [new BenchmarkStep(Setup),
+     new BenchmarkStep(AddItems),
+     new BenchmarkStep(CompleteAllItems),
+     new BenchmarkStep(DeleteAllItems)],
   ));
 
   // Configuration.

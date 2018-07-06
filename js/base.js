@@ -47,8 +47,7 @@ const numberOfIterations = 5;
 
 // A benchmark step has a name (string) and a function that will be run
 // to do the performance measurement.
-function BenchmarkStep(name, fn) {
-  this.name = name;
+function BenchmarkStep(fn) {
   this.fn = fn;
 }
 
@@ -273,7 +272,7 @@ BenchmarkSuite.prototype.RunSteps = async function (runner) {
   let elapsed = 0;
 
   for (let step of this.steps) {
-    if (runner.NotifyStart) runner.NotifyStart(this.name, step.name);
+    if (runner.NotifyStart) runner.NotifyStart(this.name, step.fn.name);
     const iframe = document.querySelector('#iframe');
     const start = performance.now();
     const shouldScore = await step.fn(iframe);

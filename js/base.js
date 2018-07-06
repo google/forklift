@@ -55,23 +55,6 @@ function Benchmark(name, steps) {
   this.steps = steps;
 }
 
-
-// Benchmark results hold the benchmark and the measured time used to
-// run the benchmark. The benchmark score is computed later once a
-// full benchmark suite has run to completion.
-function BenchmarkResult(benchmark, time) {
-  this.benchmark = benchmark;
-  this.time = time;
-}
-
-
-// Automatically convert results to numbers. Used by the geometric
-// mean computation.
-BenchmarkResult.prototype.valueOf = function () {
-  return this.time;
-}
-
-
 // Suites of benchmarks consist of a name and the set of benchmarks in
 // addition to the reference timing that the final score will be based
 // on. This way, all scores are relative to a reference run and higher
@@ -267,8 +250,6 @@ BenchmarkSuite.FormatScore = function (value) {
 // Notifies the runner that we're done running a single benchmark in
 // the benchmark suite. This can be useful to report progress.
 BenchmarkSuite.prototype.NotifyStep = function (result) {
-  this.results.push(result);
-  if (this.runner.NotifyStep) this.runner.NotifyStep(result.name);
 }
 
 // Notifies the runner that we're done with running a suite and that
@@ -285,9 +266,6 @@ BenchmarkSuite.prototype.NotifyResult = function (result) {
 BenchmarkSuite.prototype.NotifyError = function (error) {
   if (this.runner.NotifyError) {
     this.runner.NotifyError(this.name, error);
-  }
-  if (this.runner.NotifyStep) {
-    this.runner.NotifyStep(this.name);
   }
 }
 
@@ -319,8 +297,7 @@ BenchmarkSuite.RunIterations = async function (runner, suite) {
     BenchmarkSuite.recycleIframe({create: true});
     await navigateIframe(suite.src, async function () {
       await pageLoaded(self.iframe);
-      const result = await suite.RunSteps(runner);
-      suite.NotifyStep(new BenchmarkResult(this.benchmark, result));
+      suite.results.push(await suite.RunSteps(runner));
     });
   }
 

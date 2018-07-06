@@ -37,9 +37,9 @@ performance.now = (function () {
     Date.now;
 })();
 
-var tuningMode = false;
-var tuningTarget = 10000;
-var numberOfIterations = 5;
+const tuningMode = false;
+const tuningTarget = 10000;
+const numberOfIterations = 5;
 
 // Simple framework for running the benchmark suites and
 // computing a score based on the timing measurements.
@@ -101,7 +101,7 @@ alert = function (s) {
 // with a 100% deterministic alternative.
 BenchmarkSuite.ResetRNG = function () {
   Math.random = (function () {
-    var seed = 49734321;
+    let seed = 49734321;
     return function () {
       // Robert Jenkins' 32 bit integer hash function.
       seed = ((seed + 0x7ed55d16) + (seed << 12)) & 0xffffffff;
@@ -116,7 +116,7 @@ BenchmarkSuite.ResetRNG = function () {
 }
 
 BenchmarkSuite.recycleIframe = function (options) {
-  var iframeHolder = document.querySelector('#iframe-holder');
+  const iframeHolder = document.querySelector('#iframe-holder');
 
   // Delete iframe if it exists.
   if (this.iframe) {
@@ -132,24 +132,23 @@ BenchmarkSuite.recycleIframe = function (options) {
   }
 
   // Create new iframe.
-  var iframe = document.createElement('iframe');
-  iframe.id = "iframe";
-  iframe.scrolling = "no";
-  this.iframe = iframe;
+  this.iframe = document.createElement('iframe');
+  this.iframe.id = "iframe";
+  this.iframe.scrolling = "no";
 
   // Show iframe holder div.
-  iframeHolder.appendChild(iframe);
+  iframeHolder.appendChild(this.iframe);
   iframeHolder.className = "iframe-holder";
   iframeHolder.style = "visibility: visible";
 }
 
 function navigateIframe(src, onload) {
-  var iframe = document.querySelector('#iframe');
+  const iframe = document.querySelector('#iframe');
   if (!iframe) {
     throw new DOMException("expected iframe element");
   }
 
-  var promise = new Promise((resolve, reject) => {
+  const promise = new Promise((resolve, reject) => {
     iframe.onload = async function () {
       resolve(await onload(iframe));
     };
@@ -164,7 +163,7 @@ BenchmarkSuite.Navigate = async function (src, onload) {
 }
 
 function sendEnterKeypress(el) {
-  var e = document.createEvent('HTMLEvents');
+  const e = document.createEvent('HTMLEvents');
   e.initEvent('keypress', true, true);
   e.key = 'Enter';
   e.keyCode = 13;
@@ -196,7 +195,7 @@ function waitForRequestAnimationFrame() {
 async function pageLoaded(iframe) {
   while (true) {
     await waitForRequestAnimationFrame();
-    var todoEntry = iframe.contentDocument.querySelector(".new-todo");
+    const todoEntry = iframe.contentDocument.querySelector(".new-todo");
     if (todoEntry) {
       return;
     }
@@ -208,7 +207,7 @@ function checkTuning(suite, result) {
     return;
   }
 
-  var originalResult = result;
+  let originalResult = result;
   if (suite.scaling) originalResult = result / suite.scaling;
 
   if (result < tuningTarget * 0.95) {
@@ -222,9 +221,9 @@ function checkTuning(suite, result) {
 // Counts the total number of registered benchmarks. Useful for
 // showing progress as a percentage.
 BenchmarkSuite.CountBenchmarks = function () {
-  var result = 0;
-  var suites = BenchmarkSuite.suites;
-  for (var i = 0; i < suites.length; i++) {
+  let result = 0;
+  const suites = BenchmarkSuite.suites;
+  for (let i = 0; i < suites.length; i++) {
     result += numberOfIterations * suites[i].benchmark.steps.length;
   }
   // Increase the count by 1 so the last step doesn't appear "finished"
@@ -236,8 +235,8 @@ BenchmarkSuite.CountBenchmarks = function () {
 
 // Computes the geometric mean of a set of numbers.
 BenchmarkSuite.GeometricMean = function (numbers) {
-  var log = 0;
-  for (var i = 0; i < numbers.length; i++) {
+  let log = 0;
+  for (let i = 0; i < numbers.length; i++) {
     log += Math.log(numbers[i]);
   }
   return Math.pow(Math.E, log / numbers.length);
@@ -246,8 +245,8 @@ BenchmarkSuite.GeometricMean = function (numbers) {
 
 // Computes the geometric mean of a set of throughput time measurements.
 BenchmarkSuite.GeometricMeanTime = function (measurements) {
-  var log = 0;
-  for (var i = 0; i < measurements.length; i++) {
+  let log = 0;
+  for (let i = 0; i < measurements.length; i++) {
     log += Math.log(measurements[i].time);
   }
   return Math.pow(Math.E, log / measurements.length);
@@ -276,7 +275,7 @@ BenchmarkSuite.prototype.NotifyStep = function (result) {
 BenchmarkSuite.prototype.NotifyResult = function (result) {
   BenchmarkSuite.scores.push(result);
   if (this.runner.NotifyResult) {
-    var formatted = BenchmarkSuite.FormatScore(result);
+    const formatted = BenchmarkSuite.FormatScore(result);
     this.runner.NotifyResult(this.name, formatted);
   }
 }
@@ -296,13 +295,13 @@ BenchmarkSuite.prototype.NotifyError = function (error) {
 BenchmarkSuite.prototype.RunSteps = async function (runner) {
   BenchmarkSuite.ResetRNG();
   this.runner = runner;
-  var elapsed = 0;
+  let elapsed = 0;
 
-  for (var step of this.benchmark.steps) {
+  for (let step of this.benchmark.steps) {
     if (runner.NotifyStart) runner.NotifyStart(this.name);
-    var iframe = document.querySelector('#iframe');
-    var start = performance.now();
-    var shouldScore = await step(iframe);
+    const iframe = document.querySelector('#iframe');
+    const start = performance.now();
+    const shouldScore = await step(iframe);
     if (shouldScore !== false) {
       elapsed += performance.now() - start;
     }
@@ -312,20 +311,20 @@ BenchmarkSuite.prototype.RunSteps = async function (runner) {
 }
 
 BenchmarkSuite.RunIterations = async function (runner, suite) {
-  var self = this;
+  const self = this;
   suite.results = [];
 
-  for (var i = 0; i < numberOfIterations; i++) {
+  for (let i = 0; i < numberOfIterations; i++) {
     BenchmarkSuite.recycleIframe({create: true});
     await navigateIframe(suite.src, async function () {
       await pageLoaded(self.iframe);
-      var result = await suite.RunSteps(runner);
+      const result = await suite.RunSteps(runner);
       suite.NotifyStep(new BenchmarkResult(this.benchmark, result));
     });
   }
 
-  var scaling = suite.scaling ? suite.scaling : 1;
-  var result = BenchmarkSuite.GeometricMean(suite.results) * scaling;
+  const scaling = suite.scaling ? suite.scaling : 1;
+  const result = BenchmarkSuite.GeometricMean(suite.results) * scaling;
   if (tuningMode) {
     console.log(suite.name);
     console.log(`results: ${JSON.stringify(suite.results)}`);
@@ -342,8 +341,8 @@ BenchmarkSuite.RunIterations = async function (runner, suite) {
 BenchmarkSuite.RunSuites = async function (runner) {
   BenchmarkSuite.scores = [];
 
-  for (var suite of BenchmarkSuite.suites) {
-    var result = await BenchmarkSuite.RunIterations(runner, suite);
+  for (let suite of BenchmarkSuite.suites) {
+    const result = await BenchmarkSuite.RunIterations(runner, suite);
     checkTuning(suite, result);
     suite.NotifyResult(result);
   }
@@ -356,8 +355,8 @@ BenchmarkSuite.RunSuites = async function (runner) {
 
   // show final result
   if (runner.NotifyScore) {
-    var score = BenchmarkSuite.GeometricMean(BenchmarkSuite.scores);
-    var formatted = BenchmarkSuite.FormatScore(score);
+    const score = BenchmarkSuite.GeometricMean(BenchmarkSuite.scores);
+    const formatted = BenchmarkSuite.FormatScore(score);
     runner.NotifyScore(formatted);
   }
 }

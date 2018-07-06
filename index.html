@@ -24,16 +24,14 @@
   </script>
 
   <script type="text/javascript">
-    var completed = 0;
-    var benchmarks = BenchmarkSuite.CountBenchmarks();
-    var success = true;
-    var skipBenchmarks =
-      typeof skipBenchmarks === "undefined" ? [] : skipBenchmarks;
+    let completed = 0;
+    const benchmarks = BenchmarkSuite.CountBenchmarks();
+    let success = true;
 
     function ShowBox(name) {
       completed++;
       document.getElementById("main-banner").innerHTML = `Running Forklift...<br>Step ${completed} of ${benchmarks} / ${name}`;
-      var bar = document.getElementById("progress-bar").style.width = "" +
+      document.getElementById("progress-bar").style.width = "" +
         ((completed) / benchmarks) * 100 + "%";
     }
 
@@ -52,7 +50,7 @@
     }
 
     function AddCycles(score) {
-      var status = document.getElementById("main-banner");
+      const status = document.getElementById("main-banner");
       if (success) {
         status.innerHTML = "Forklift Cycles: " + score;
       } else {
@@ -69,8 +67,8 @@
       // append the progress bar elements..
       document.getElementById("bar-appendix").innerHTML =
         "<br/><div class=\"progress progress-striped\" id=\"progress-bar-container\" style=\"visibility:hidden\"><div class=\"bar\"style=\"width: 0%;\" id=\"progress-bar\"></div></div>";
-      var anchor = document.getElementById("run-forklift");
-      var parent = document.getElementById("main-container");
+      const anchor = document.getElementById("run-forklift");
+      const parent = document.getElementById("main-container");
       parent.appendChild(document.getElementById("inside-anchor"));
       parent.removeChild(anchor);
 

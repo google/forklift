@@ -32,7 +32,7 @@
   ));
 
   // Configuration.
-  var numberOfItemsToAdd = 100;
+  const numberOfItemsToAdd = 100;
 
   async function Setup(iframe) {
     await iframe.contentWindow.todo.storage.deleteDatabase();

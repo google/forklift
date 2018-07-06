@@ -25,7 +25,7 @@
 
   <script type="text/javascript">
     let completed = 0;
-    const steps = BenchmarkSuite.CountSteps();
+    const steps = Benchmark.CountSteps();
     let success = true;
 
     function ShowBox(benchmarkName, stepName) {
@@ -76,7 +76,7 @@
 
       document.getElementById("progress-bar-container").style.visibility = 'visible';
 
-      BenchmarkSuite.RunSuites({
+      Benchmark.RunBenchmarks({
         NotifyStart: ShowBox,
         NotifyError: AddError,
         NotifyResult: AddResult,

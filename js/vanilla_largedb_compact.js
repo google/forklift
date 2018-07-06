@@ -26,7 +26,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function () {
-  BenchmarkSuite.Add(new BenchmarkSuite('VanillaLargeDBCompact', 814.65,
+  Benchmark.Add(new Benchmark('VanillaLargeDBCompact', 814.65,
     'third_party/todomvc/vanilla-idb/index.html?open=0',
     [new BenchmarkStep(Setup),
      new BenchmarkStep(OpenDatabase)],
@@ -44,7 +44,7 @@
 
     // Navigate away from the page and wait for the backing store to
     // close.
-    await BenchmarkSuite.Navigate('third_party/todomvc/vanilla-idb/index.html?open=0', async function (iframe) {
+    await Benchmark.Navigate('third_party/todomvc/vanilla-idb/index.html?open=0', async function (iframe) {
       thisIframe = iframe;
       await waitForIndexedDBShutdown();
       await pageLoaded(thisIframe);
@@ -59,7 +59,7 @@
 
     // Navigate away from the page and wait for the backing store to
     // close.
-    await BenchmarkSuite.Navigate('third_party/todomvc/vanilla-idb/index.html?open=0', async function (iframe) {
+    await Benchmark.Navigate('third_party/todomvc/vanilla-idb/index.html?open=0', async function (iframe) {
       thisIframe = iframe;
       await waitForIndexedDBShutdown();
       await pageLoaded(thisIframe);

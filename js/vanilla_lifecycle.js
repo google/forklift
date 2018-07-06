@@ -26,7 +26,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function () {
-  BenchmarkSuite.Add(new BenchmarkSuite('VanillaLifecycle', 16.92,
+  Benchmark.Add(new Benchmark('VanillaLifecycle', 16.92,
     'third_party/todomvc/vanilla-idb/index.html?open=0',
     [new BenchmarkStep(Setup),
      new BenchmarkStep(AddItems),

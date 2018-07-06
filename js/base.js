@@ -51,23 +51,20 @@ function BenchmarkStep(fn) {
   this.fn = fn;
 }
 
-// Suites of benchmarks consist of a name and the set of benchmarks in
-// addition to the reference timing that the final score will be based
-// on. This way, all scores are relative to a reference run and higher
-// scores implies better performance.
-function BenchmarkSuite(name, scaling, src, steps) {
+// Benchmarks consist of a name and the set of steps.
+function Benchmark(name, scaling, src, steps) {
   this.name = name;
   this.scaling = scaling;
   this.src = src;
   this.steps = steps;
 }
 
-BenchmarkSuite.Add = function (suite) {
-  if (typeof BenchmarkSuite.suites === 'undefined') {
+Benchmark.Add = function (suite) {
+  if (typeof Benchmark.suites === 'undefined') {
     // Keep track of all declared benchmark suites.
-    BenchmarkSuite.suites = [];
+    Benchmark.suites = [];
   }
-  BenchmarkSuite.suites.push(suite);
+  Benchmark.suites.push(suite);
 }
 
 
@@ -78,7 +75,7 @@ alert = function (s) {
 
 // To make the benchmark results predictable, we replace Math.random
 // with a 100% deterministic alternative.
-BenchmarkSuite.ResetRNG = function () {
+Benchmark.ResetRNG = function () {
   Math.random = (function () {
     let seed = 49734321;
     return function () {
@@ -94,7 +91,7 @@ BenchmarkSuite.ResetRNG = function () {
   })();
 }
 
-BenchmarkSuite.recycleIframe = function (options) {
+Benchmark.recycleIframe = function (options) {
   const iframeHolder = document.querySelector('#iframe-holder');
 
   // Delete iframe if it exists.
@@ -136,8 +133,8 @@ function navigateIframe(src, onload) {
   return promise;
 }
 
-BenchmarkSuite.Navigate = async function (src, onload) {
-  BenchmarkSuite.recycleIframe({create: true});
+Benchmark.Navigate = async function (src, onload) {
+  Benchmark.recycleIframe({create: true});
   await navigateIframe(src, onload);
 }
 
@@ -199,9 +196,9 @@ function checkTuning(suite, result) {
 
 // Counts the total number of registered benchmarks. Useful for
 // showing progress as a percentage.
-BenchmarkSuite.CountSteps = function () {
+Benchmark.CountSteps = function () {
   let result = 0;
-  const suites = BenchmarkSuite.suites;
+  const suites = Benchmark.suites;
   for (let i = 0; i < suites.length; i++) {
     result += numberOfIterations * suites[i].steps.length;
   }
@@ -213,7 +210,7 @@ BenchmarkSuite.CountSteps = function () {
 
 
 // Computes the geometric mean of a set of numbers.
-BenchmarkSuite.GeometricMean = function (numbers) {
+Benchmark.GeometricMean = function (numbers) {
   let log = 0;
   for (let i = 0; i < numbers.length; i++) {
     log += Math.log(numbers[i]);
@@ -223,7 +220,7 @@ BenchmarkSuite.GeometricMean = function (numbers) {
 
 
 // Computes the geometric mean of a set of throughput time measurements.
-BenchmarkSuite.GeometricMeanTime = function (measurements) {
+Benchmark.GeometricMeanTime = function (measurements) {
   let log = 0;
   for (let i = 0; i < measurements.length; i++) {
     log += Math.log(measurements[i].time);
@@ -234,7 +231,7 @@ BenchmarkSuite.GeometricMeanTime = function (measurements) {
 
 // Converts a score value to a string with at least three significant
 // digits.
-BenchmarkSuite.FormatScore = function (value) {
+Benchmark.FormatScore = function (value) {
   if (value > 100) {
     return value.toFixed(0);
   } else {
@@ -242,32 +239,32 @@ BenchmarkSuite.FormatScore = function (value) {
   }
 }
 
-// Notifies the runner that we're done running a single benchmark in
-// the benchmark suite. This can be useful to report progress.
-BenchmarkSuite.prototype.NotifyStep = function (result) {
+// Notifies the runner that we're done running a step in
+// the benchmark. This can be useful to report progress.
+Benchmark.prototype.NotifyStep = function (result) {
 }
 
-// Notifies the runner that we're done with running a suite and that
+// Notifies the runner that we're done with running a benchmark and that
 // we have a result which can be reported to the user if needed.
-BenchmarkSuite.prototype.NotifyResult = function (result) {
-  BenchmarkSuite.scores.push(result);
+Benchmark.prototype.NotifyResult = function (result) {
+  Benchmark.scores.push(result);
   if (this.runner.NotifyResult) {
-    const formatted = BenchmarkSuite.FormatScore(result);
+    const formatted = Benchmark.FormatScore(result);
     this.runner.NotifyResult(this.name, formatted);
   }
 }
 
 // Notifies the runner that running a benchmark resulted in an error.
-BenchmarkSuite.prototype.NotifyError = function (error) {
+Benchmark.prototype.NotifyError = function (error) {
   if (this.runner.NotifyError) {
     this.runner.NotifyError(this.name, error);
   }
 }
 
-// This function runs a suite and calculates the amount of time taken
-// to complete the step.
-BenchmarkSuite.prototype.RunSteps = async function (runner) {
-  BenchmarkSuite.ResetRNG();
+// This function runs a benchmark and calculates the amount of time
+// it took to complete.
+Benchmark.prototype.RunSteps = async function (runner) {
+  Benchmark.ResetRNG();
   this.runner = runner;
   let elapsed = 0;
 
@@ -284,12 +281,12 @@ BenchmarkSuite.prototype.RunSteps = async function (runner) {
   return elapsed;
 }
 
-BenchmarkSuite.RunIterations = async function (runner, suite) {
+Benchmark.RunIterations = async function (runner, suite) {
   const self = this;
   suite.results = [];
 
   for (let i = 0; i < numberOfIterations; i++) {
-    BenchmarkSuite.recycleIframe({create: true});
+    Benchmark.recycleIframe({create: true});
     await navigateIframe(suite.src, async function () {
       await pageLoaded(self.iframe);
       suite.results.push(await suite.RunSteps(runner));
@@ -297,7 +294,7 @@ BenchmarkSuite.RunIterations = async function (runner, suite) {
   }
 
   const scaling = suite.scaling ? suite.scaling : 1;
-  const result = BenchmarkSuite.GeometricMean(suite.results) * scaling;
+  const result = Benchmark.GeometricMean(suite.results) * scaling;
   if (tuningMode) {
     console.log(suite.name);
     console.log(`results: ${JSON.stringify(suite.results)}`);
@@ -307,29 +304,27 @@ BenchmarkSuite.RunIterations = async function (runner, suite) {
   return result;
 }
 
-// Runs all registered benchmark suites and optionally yields between
-// each individual benchmark to avoid running for too long in the
-// context of browsers. Once done, the final score is reported to the
-// runner.
-BenchmarkSuite.RunSuites = async function (runner) {
-  BenchmarkSuite.scores = [];
+// Runs all registered benchmarks.  Once done, the final score is
+// reported to the runner.
+Benchmark.RunBenchmarks = async function (runner) {
+  Benchmark.scores = [];
 
-  for (let suite of BenchmarkSuite.suites) {
-    const result = await BenchmarkSuite.RunIterations(runner, suite);
+  for (let suite of Benchmark.suites) {
+    const result = await Benchmark.RunIterations(runner, suite);
     checkTuning(suite, result);
     suite.NotifyResult(result);
   }
 
   // We've completed all of the steps, so update the progress bar and
   // sleep briefly to let the UI update.
-  BenchmarkSuite.recycleIframe({create: false});
+  Benchmark.recycleIframe({create: false});
   if (runner.NotifyStart) runner.NotifyStart('Wrapping up');
   await sleep(100);
 
   // show final result
   if (runner.NotifyScore) {
-    const score = BenchmarkSuite.GeometricMean(BenchmarkSuite.scores);
-    const formatted = BenchmarkSuite.FormatScore(score);
+    const score = Benchmark.GeometricMean(Benchmark.scores);
+    const formatted = Benchmark.FormatScore(score);
     runner.NotifyScore(formatted);
   }
 }

@@ -26,7 +26,7 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function () {
-  BenchmarkSuite.Add(new BenchmarkSuite('VanillaEmptyDB', 1049.12,
+  Benchmark.Add(new Benchmark('VanillaEmptyDB', 1049.12,
     'third_party/todomvc/vanilla-idb/index.html?open=0',
     [new BenchmarkStep(Setup),
      new BenchmarkStep(OpenDatabase)],
@@ -40,7 +40,7 @@
 
     iframe.contentWindow.todo.storage.closeDatabase();
 
-    await BenchmarkSuite.Navigate('third_party/todomvc/vanilla-idb/index.html?open=0', async function (iframe) {
+    await Benchmark.Navigate('third_party/todomvc/vanilla-idb/index.html?open=0', async function (iframe) {
       await pageLoaded(iframe);
       await waitForIndexedDBShutdown();
     });

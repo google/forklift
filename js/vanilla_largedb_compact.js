@@ -30,7 +30,7 @@
     'third_party/todomvc/vanilla-idb/index.html?open=0',
     new Benchmark("VanillaLargeDBCompact", [Setup, OpenDatabase])
   );
-  BenchmarkSuite.suites.push(VanillaLargeDBCompact);
+  BenchmarkSuite.Add(VanillaLargeDBCompact);
 
   async function Setup(iframe) {
     let thisIframe = iframe;

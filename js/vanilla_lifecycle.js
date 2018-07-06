@@ -30,7 +30,7 @@
     'third_party/todomvc/vanilla-idb/index.html?open=0',
     new Benchmark("VanillaLifecycle", [Setup, AddItems, CompleteAllItems, DeleteAllItems])
   );
-  BenchmarkSuite.suites.push(VanillaLifecycle);
+  BenchmarkSuite.Add(VanillaLifecycle);
 
   // Configuration.
   var numberOfItemsToAdd = 10;

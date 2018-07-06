@@ -30,7 +30,7 @@
     'third_party/todomvc/vanilla-idb/index.html?open=0',
     new Benchmark("VanillaLargeDB", [Setup, OpenDatabase])
   );
-  BenchmarkSuite.suites.push(VanillaLargeDB);
+  BenchmarkSuite.Add(VanillaLargeDB);
 
   async function Setup(iframe) {
     await iframe.contentWindow.todo.storage.deleteDatabase();

@@ -30,7 +30,7 @@
     'third_party/todomvc/vanilla-idb/index.html?open=0',
     new Benchmark("VanillaPopulateThroughApp", [Setup, OpenDatabase])
   );
-  BenchmarkSuite.suites.push(VanillaPopulateThroughApp);
+  BenchmarkSuite.Add(VanillaPopulateThroughApp);
 
   // Configuration.
   var numberOfItemsToAdd = 100;

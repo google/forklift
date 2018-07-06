@@ -83,16 +83,19 @@ function BenchmarkSuite(name, scaling, src, benchmark) {
   this.benchmark = benchmark;
 }
 
-
-// Keep track of all declared benchmark suites.
-BenchmarkSuite.suites = [];
+BenchmarkSuite.Add = function (suite) {
+  if (typeof BenchmarkSuite.suites === 'undefined') {
+    // Keep track of all declared benchmark suites.
+    BenchmarkSuite.suites = [];
+  }
+  BenchmarkSuite.suites.push(suite);
+}
 
 
 // Override the alert function to throw an exception instead.
 alert = function (s) {
   throw "Alert called with argument: " + s;
 };
-
 
 // To make the benchmark results predictable, we replace Math.random
 // with a 100% deterministic alternative.

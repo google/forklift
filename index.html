@@ -30,7 +30,7 @@
 
     function ShowBox(benchmarkName, stepName) {
       completed++;
-      document.getElementById("main-banner").innerHTML = `Running Forklift...<br>${completed} of ${steps} / ${benchmarkName}.${stepName}`;
+      document.getElementById("main-banner").innerHTML = `Running Forklift...<br>${benchmarkName}.${stepName}`;
       document.getElementById("progress-bar").style.width = "" +
         ((completed) / steps) * 100 + "%";
     }
@@ -66,7 +66,7 @@
       document.getElementById("main-banner").innerHTML = "Running Forklift...";
       // append the progress bar elements..
       document.getElementById("bar-appendix").innerHTML =
-        "<br/><div class=\"progress progress-striped\" id=\"progress-bar-container\" style=\"visibility:hidden\"><div class=\"bar\"style=\"width: 0%;\" id=\"progress-bar\"></div></div>";
+        "<br/><div class=\"progress\" id=\"progress-bar-container\" style=\"visibility:hidden\"><div class=\"progress-bar\" role=\"progressbar\" style=\"width: 0%;\" id=\"progress-bar\"></div></div>";
       const anchor = document.getElementById("run-forklift");
       const parent = document.getElementById("main-container");
       parent.appendChild(document.getElementById("inside-anchor"));
@@ -104,7 +104,7 @@
       </div>
       <div id="main-container">
         <a id="run-forklift" href="javascript:Run()">
-          <div id="inside-anchor">
+          <div id="inside-anchor" style="margin-bottom: 10px">
             <h1 align="center" id="main-banner">Start Forklift</h1>
             <div id="bar-appendix"></div>
           </div>

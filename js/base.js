@@ -94,7 +94,7 @@ BenchmarkSuite.Add = function (suite) {
 
 // Override the alert function to throw an exception instead.
 alert = function (s) {
-  throw "Alert called with argument: " + s;
+  throw 'Alert called with argument: ' + s;
 };
 
 // To make the benchmark results predictable, we replace Math.random
@@ -126,26 +126,26 @@ BenchmarkSuite.recycleIframe = function (options) {
 
   if (!options.create) {
     // We want to only delete the iframe and hide the iframe holder.
-    iframeHolder.classList.remove("iframe-holder");
-    iframeHolder.style = "visibility: hidden";
+    iframeHolder.classList.remove('iframe-holder');
+    iframeHolder.style = 'visibility: hidden';
     return;
   }
 
   // Create new iframe.
   this.iframe = document.createElement('iframe');
-  this.iframe.id = "iframe";
-  this.iframe.scrolling = "no";
+  this.iframe.id = 'iframe';
+  this.iframe.scrolling = 'no';
 
   // Show iframe holder div.
   iframeHolder.appendChild(this.iframe);
-  iframeHolder.className = "iframe-holder";
-  iframeHolder.style = "visibility: visible";
+  iframeHolder.className = 'iframe-holder';
+  iframeHolder.style = 'visibility: visible';
 }
 
 function navigateIframe(src, onload) {
   const iframe = document.querySelector('#iframe');
   if (!iframe) {
-    throw new DOMException("expected iframe element");
+    throw new DOMException('expected iframe element');
   }
 
   const promise = new Promise((resolve, reject) => {
@@ -195,7 +195,7 @@ function waitForRequestAnimationFrame() {
 async function pageLoaded(iframe) {
   while (true) {
     await waitForRequestAnimationFrame();
-    const todoEntry = iframe.contentDocument.querySelector(".new-todo");
+    const todoEntry = iframe.contentDocument.querySelector('.new-todo');
     if (todoEntry) {
       return;
     }
@@ -226,7 +226,7 @@ BenchmarkSuite.CountBenchmarks = function () {
   for (let i = 0; i < suites.length; i++) {
     result += numberOfIterations * suites[i].benchmark.steps.length;
   }
-  // Increase the count by 1 so the last step doesn't appear "finished"
+  // Increase the count by 1 so the last step doesn't appear 'finished'
   // in the progress bar.
   result++;
   return result;

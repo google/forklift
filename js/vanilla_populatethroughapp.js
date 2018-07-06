@@ -28,7 +28,7 @@
 (function () {
   BenchmarkSuite.Add(new BenchmarkSuite('VanillaPopulateThroughApp', 975.21,
     'third_party/todomvc/vanilla-idb/index.html?open=0',
-    new Benchmark("VanillaPopulateThroughApp", [Setup, OpenDatabase])
+    new Benchmark('VanillaPopulateThroughApp', [Setup, OpenDatabase])
   ));
 
   // Configuration.
@@ -43,10 +43,10 @@
     let newTodo = iframe.contentDocument.querySelector('.new-todo');
     let todoList = iframe.contentDocument.querySelector('.todo-list');
     if (!todoList) {
-      throw new DOMException("missing .todo-list");
+      throw new DOMException('missing .todo-list');
     }
     if (todoList.children.length > 0) {
-      throw new DOMException("expected 0 children");
+      throw new DOMException('expected 0 children');
     }
 
     let numberOfItemsAdded = 0;

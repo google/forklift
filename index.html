@@ -28,9 +28,9 @@
     const steps = BenchmarkSuite.CountSteps();
     let success = true;
 
-    function ShowBox(name) {
+    function ShowBox(benchmarkName, stepName) {
       completed++;
-      document.getElementById("main-banner").innerHTML = `Running Forklift...<br>Step ${completed} of ${steps} / ${name}`;
+      document.getElementById("main-banner").innerHTML = `Running Forklift...<br>${completed} of ${steps} / ${benchmarkName}.${stepName}`;
       document.getElementById("progress-bar").style.width = "" +
         ((completed) / steps) * 100 + "%";
     }

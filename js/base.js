@@ -45,25 +45,21 @@ const numberOfIterations = 5;
 // computing a score based on the timing measurements.
 
 
-// A benchmark has a name (string) and a function that will be run to
-// do the performance measurement. The optional setup and tearDown
-// arguments are functions that will be invoked before and after
-// running the benchmark, but the running time of these functions will
-// not be accounted for in the benchmark score.
-function Benchmark(name, steps) {
+// A benchmark step has a name (string) and a function that will be run
+// to do the performance measurement.
+function BenchmarkStep(name, fn) {
   this.name = name;
-  this.steps = steps;
+  this.fn = fn;
 }
 
 // Suites of benchmarks consist of a name and the set of benchmarks in
 // addition to the reference timing that the final score will be based
 // on. This way, all scores are relative to a reference run and higher
 // scores implies better performance.
-function BenchmarkSuite(name, scaling, src, benchmark, steps) {
+function BenchmarkSuite(name, scaling, src, steps) {
   this.name = name;
   this.scaling = scaling;
   this.src = src;
-  this.benchmark = benchmark;
   this.steps = steps;
 }
 
@@ -277,10 +273,10 @@ BenchmarkSuite.prototype.RunSteps = async function (runner) {
   let elapsed = 0;
 
   for (let step of this.steps) {
-    if (runner.NotifyStart) runner.NotifyStart(this.name);
+    if (runner.NotifyStart) runner.NotifyStart(this.name, step.name);
     const iframe = document.querySelector('#iframe');
     const start = performance.now();
-    const shouldScore = await step(iframe);
+    const shouldScore = await step.fn(iframe);
     if (shouldScore !== false) {
       elapsed += performance.now() - start;
     }

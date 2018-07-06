@@ -220,7 +220,7 @@ function checkTuning(suite, result) {
 
 // Counts the total number of registered benchmarks. Useful for
 // showing progress as a percentage.
-BenchmarkSuite.CountBenchmarks = function () {
+BenchmarkSuite.CountSteps = function () {
   let result = 0;
   const suites = BenchmarkSuite.suites;
   for (let i = 0; i < suites.length; i++) {

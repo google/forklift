@@ -25,14 +25,14 @@
 
   <script type="text/javascript">
     let completed = 0;
-    const benchmarks = BenchmarkSuite.CountBenchmarks();
+    const steps = BenchmarkSuite.CountSteps();
     let success = true;
 
     function ShowBox(name) {
       completed++;
-      document.getElementById("main-banner").innerHTML = `Running Forklift...<br>Step ${completed} of ${benchmarks} / ${name}`;
+      document.getElementById("main-banner").innerHTML = `Running Forklift...<br>Step ${completed} of ${steps} / ${name}`;
       document.getElementById("progress-bar").style.width = "" +
-        ((completed) / benchmarks) * 100 + "%";
+        ((completed) / steps) * 100 + "%";
     }
 
     function AddResult(name, result) {}

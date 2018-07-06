@@ -28,7 +28,8 @@
 (function () {
   BenchmarkSuite.Add(new BenchmarkSuite('VanillaEmptyDB', 1049.12,
     'third_party/todomvc/vanilla-idb/index.html?open=0',
-    new Benchmark('VanillaEmptyDB', [Setup, OpenDatabase])
+    new Benchmark('VanillaEmptyDB', [Setup, OpenDatabase]),
+    [Setup, OpenDatabase]
   ));
 
   async function Setup(iframe) {

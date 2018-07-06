@@ -76,11 +76,12 @@ BenchmarkResult.prototype.valueOf = function () {
 // addition to the reference timing that the final score will be based
 // on. This way, all scores are relative to a reference run and higher
 // scores implies better performance.
-function BenchmarkSuite(name, scaling, src, benchmark) {
+function BenchmarkSuite(name, scaling, src, benchmark, steps) {
   this.name = name;
   this.scaling = scaling;
   this.src = src;
   this.benchmark = benchmark;
+  this.steps = steps;
 }
 
 BenchmarkSuite.Add = function (suite) {
@@ -224,7 +225,7 @@ BenchmarkSuite.CountSteps = function () {
   let result = 0;
   const suites = BenchmarkSuite.suites;
   for (let i = 0; i < suites.length; i++) {
-    result += numberOfIterations * suites[i].benchmark.steps.length;
+    result += numberOfIterations * suites[i].steps.length;
   }
   // Increase the count by 1 so the last step doesn't appear 'finished'
   // in the progress bar.
@@ -267,7 +268,7 @@ BenchmarkSuite.FormatScore = function (value) {
 // the benchmark suite. This can be useful to report progress.
 BenchmarkSuite.prototype.NotifyStep = function (result) {
   this.results.push(result);
-  if (this.runner.NotifyStep) this.runner.NotifyStep(result.benchmark.name);
+  if (this.runner.NotifyStep) this.runner.NotifyStep(result.name);
 }
 
 // Notifies the runner that we're done with running a suite and that
@@ -297,7 +298,7 @@ BenchmarkSuite.prototype.RunSteps = async function (runner) {
   this.runner = runner;
   let elapsed = 0;
 
-  for (let step of this.benchmark.steps) {
+  for (let step of this.steps) {
     if (runner.NotifyStart) runner.NotifyStart(this.name);
     const iframe = document.querySelector('#iframe');
     const start = performance.now();

@@ -28,7 +28,8 @@
 (function () {
   BenchmarkSuite.Add(new BenchmarkSuite('VanillaPopulateThroughApp', 975.21,
     'third_party/todomvc/vanilla-idb/index.html?open=0',
-    new Benchmark('VanillaPopulateThroughApp', [Setup, OpenDatabase])
+    new Benchmark('VanillaPopulateThroughApp', [Setup, OpenDatabase]),
+    [Setup, OpenDatabase]
   ));
 
   // Configuration.

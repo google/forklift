@@ -28,18 +28,31 @@
 (function () {
   Benchmark.Add(new Benchmark('VanillaLargeDB', 8.2,
     'third_party/todomvc/vanilla-idb/index.html?open=0',
-    [new BenchmarkStep(Setup),
+    [new BenchmarkStep(SetupDeleteDB),
+     new BenchmarkStep(SetupCreateDB),
+     new BenchmarkStep(SetupRenavigate),
      new BenchmarkStep(OpenDatabase)],
   ));
 
-  async function Setup(iframe) {
+  async function SetupDeleteDB(iframe) {
     await iframe.contentWindow.todo.storage.deleteDatabase();
+
+    // Do not count this step in the elapsed time.
+    return false;
+  }
+
+  async function SetupCreateDB(iframe) {
     await iframe.contentWindow.todo.storage.open({
       populated: true
     }, function () {});
 
     iframe.contentWindow.todo.storage.closeDatabase();
 
+    // Do not count this step in the elapsed time.
+    return false;
+  }
+
+  async function SetupRenavigate(iframe) {
     await Benchmark.Navigate('third_party/todomvc/vanilla-idb/index.html?open=0', async function (iframe) {
       await waitForIndexedDBShutdown();
       await pageLoaded(iframe);

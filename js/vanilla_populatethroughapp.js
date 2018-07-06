@@ -28,19 +28,26 @@
 (function () {
   Benchmark.Add(new Benchmark('VanillaPopulateThroughApp', 975.21,
     'third_party/todomvc/vanilla-idb/index.html?open=0',
-    [new BenchmarkStep(Setup),
+    [new BenchmarkStep(SetupRecreateDB),
+     new BenchmarkStep(SetupApp),
+     new BenchmarkStep(SetupRenavigate),
      new BenchmarkStep(OpenDatabase)],
   ));
 
   // Configuration.
   const numberOfItemsToAdd = 100;
 
-  async function Setup(iframe) {
+  async function SetupRecreateDB(iframe) {
     await iframe.contentWindow.todo.storage.deleteDatabase();
     await iframe.contentWindow.todo.storage.open({
       populated: false
     }, function () {});
 
+    // Do not count this step in the elapsed time.
+    return false;
+  }
+
+  async function SetupApp(iframe) {
     let newTodo = iframe.contentDocument.querySelector('.new-todo');
     let todoList = iframe.contentDocument.querySelector('.todo-list');
     if (!todoList) {
@@ -66,6 +73,11 @@
 
     iframe.contentWindow.todo.storage.closeDatabase();
 
+    // Do not count this step in the elapsed time.
+    return false;
+  }
+
+  async function SetupRenavigate(iframe) {
     await Benchmark.Navigate('third_party/todomvc/vanilla-idb/index.html?open=0', async function (iframe) {
       await pageLoaded(iframe);
       await waitForIndexedDBShutdown();

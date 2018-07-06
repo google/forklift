@@ -28,42 +28,43 @@
 (function () {
   Benchmark.Add(new Benchmark('VanillaLargeDBCompact', 814.65,
     'third_party/todomvc/vanilla-idb/index.html?open=0',
-    [new BenchmarkStep(Setup),
+    [new BenchmarkStep(SetupRecreateDB),
+     new BenchmarkStep(SetupRenavigate),
+     new BenchmarkStep(SetupCompact),
      new BenchmarkStep(OpenDatabase)],
   ));
 
-  async function Setup(iframe) {
-    let thisIframe = iframe;
-
+  async function SetupRecreateDB(iframe) {
     // Delete and recreate a populated database, then close the DB.
-    await thisIframe.contentWindow.todo.storage.deleteDatabase();
-    await thisIframe.contentWindow.todo.storage.open({
+    await iframe.contentWindow.todo.storage.deleteDatabase();
+    await iframe.contentWindow.todo.storage.open({
       populated: true
     }, function () {});
-    thisIframe.contentWindow.todo.storage.closeDatabase();
+    iframe.contentWindow.todo.storage.closeDatabase();
 
+    // Do not count this step in the elapsed time.
+    return false;
+  }
+
+  async function SetupRenavigate(iframe) {
     // Navigate away from the page and wait for the backing store to
     // close.
     await Benchmark.Navigate('third_party/todomvc/vanilla-idb/index.html?open=0', async function (iframe) {
-      thisIframe = iframe;
       await waitForIndexedDBShutdown();
-      await pageLoaded(thisIframe);
+      await pageLoaded(iframe);
     });
 
+    // Do not count this step in the elapsed time.
+    return false;
+  }
+
+  async function SetupCompact(iframe) {
     // Open the DB so that compaction can begin.
-    await thisIframe.contentWindow.todo.storage.open({
+    await iframe.contentWindow.todo.storage.open({
       populated: false
     }, function () {});
     await sleep(500);
-    thisIframe.contentWindow.todo.storage.closeDatabase();
-
-    // Navigate away from the page and wait for the backing store to
-    // close.
-    await Benchmark.Navigate('third_party/todomvc/vanilla-idb/index.html?open=0', async function (iframe) {
-      thisIframe = iframe;
-      await waitForIndexedDBShutdown();
-      await pageLoaded(thisIframe);
-    });
+    iframe.contentWindow.todo.storage.closeDatabase();
 
     // Do not count this step in the elapsed time.
     return false;

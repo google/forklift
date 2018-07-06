@@ -281,13 +281,6 @@ BenchmarkSuite.prototype.NotifyResult = function (result) {
   }
 }
 
-BenchmarkSuite.prototype.NotifySkipped = function (runner) {
-  BenchmarkSuite.scores.push(1); // push default reference score.
-  if (runner.NotifyResult) {
-    runner.NotifyResult(this.name, "Skipped");
-  }
-}
-
 // Notifies the runner that running a benchmark resulted in an error.
 BenchmarkSuite.prototype.NotifyError = function (error) {
   if (this.runner.NotifyError) {

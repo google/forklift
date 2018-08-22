@@ -26,17 +26,6 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-// Performance.now is used in latency benchmarks, the fallback is Date.now.
-var performance = performance || {};
-performance.now = (function () {
-  return performance.now ||
-    performance.mozNow ||
-    performance.msNow ||
-    performance.oNow ||
-    performance.webkitNow ||
-    Date.now;
-})();
-
 const tuningMode = false;
 const tuningTarget = 10000;
 const numberOfIterations = 5;

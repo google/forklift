@@ -41,16 +41,23 @@
             <p>IndexedDB port by Chase Phillips</p>
         </footer>
         <script>
-          function addScript(script) {
-            document.write(`<script src=${script}?=${Date.now()}><\/script>`);
+          function importScripts(scripts) {
+            const now = Date.now();
+            for (let script of scripts) {
+              const newScript = document.createElement('script');
+              newScript.src = `${script}?now=${now}`;
+              document.body.appendChild(newScript);
+            }
           }
-          addScript("js/helpers.js");
-          addScript("js/store.js");
-          addScript("js/model.js");
-          addScript("js/template.js");
-          addScript("js/view.js");
-          addScript("js/controller.js");
-          addScript("js/app.js");
+          importScripts([
+            "js/helpers.js",
+            "js/store.js",
+            "js/model.js",
+            "js/template.js",
+            "js/view.js",
+            "js/controller.js",
+            "js/app.js",
+          ]);
         </script>
     </body>
 </html>

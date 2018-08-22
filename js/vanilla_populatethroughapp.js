@@ -25,26 +25,26 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(function () {
-  Benchmark.Add(new Benchmark('VanillaPopulateThroughApp', 975.21,
+(() => {
+  Benchmark.Add(new Benchmark(
+    'VanillaPopulateThroughApp',
+    975.21,
     'third_party/todomvc/vanilla-idb/index.html?open=0',
-    [new BenchmarkStep(SetupRecreateDB),
-     new BenchmarkStep(SetupApp),
-     new BenchmarkStep(SetupRenavigate),
-     new BenchmarkStep(OpenDatabase)],
-  ));
+    [
+      new BenchmarkStep(SetupRecreateDB),
+      new BenchmarkStep(SetupApp),
+      new BenchmarkStep(SetupRenavigate),
+      new BenchmarkStep(OpenDatabase)
+    ]));
 
   // Configuration.
   const numberOfItemsToAdd = 100;
 
   async function SetupRecreateDB(iframe) {
     await iframe.contentWindow.todo.storage.deleteDatabase();
-    await iframe.contentWindow.todo.storage.open({
-      populated: false
-    }, function () {});
+    await iframe.contentWindow.todo.storage.open({ populated: false }, () => {});
 
-    // Do not count this step in the elapsed time.
-    return false;
+    return false;  // Do not count this step in the elapsed time.
   }
 
   async function SetupApp(iframe) {
@@ -59,7 +59,8 @@
 
     let numberOfItemsAdded = 0;
     while (todoList.children.length < numberOfItemsToAdd) {
-      if (numberOfItemsAdded !== numberOfItemsToAdd && todoList.children.length === numberOfItemsAdded) {
+      if (numberOfItemsAdded !== numberOfItemsToAdd &&
+          todoList.children.length === numberOfItemsAdded) {
         // Add the next item.
         newTodo.value = `Something to do ${numberOfItemsAdded}`;
         newTodo.dispatchEvent(new Event('change'));
@@ -73,23 +74,21 @@
 
     iframe.contentWindow.todo.storage.closeDatabase();
 
-    // Do not count this step in the elapsed time.
-    return false;
+    return false;  // Do not count this step in the elapsed time.
   }
 
   async function SetupRenavigate(iframe) {
-    await Benchmark.Navigate('third_party/todomvc/vanilla-idb/index.html?open=0', async function (iframe) {
-      await pageLoaded(iframe);
-      await waitForIndexedDBShutdown();
-    });
+    await Benchmark.Navigate(
+      'third_party/todomvc/vanilla-idb/index.html?open=0',
+      async (iframe) => {
+        await pageLoaded(iframe);
+        await waitForIndexedDBShutdown();
+      });
 
-    // Do not count this step in the elapsed time.
-    return false;
+    return false;  // Do not count this step in the elapsed time.
   }
 
   async function OpenDatabase(iframe) {
-    await iframe.contentWindow.todo.storage.open({
-      populated: false
-    }, function () {});
+    await iframe.contentWindow.todo.storage.open({ populated: false }, () => {});
   }
 })();

@@ -25,39 +25,39 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(function () {
-  Benchmark.Add(new Benchmark('VanillaEmptyDB', 1049.12,
+(() => {
+  Benchmark.Add(new Benchmark(
+    'VanillaEmptyDB',
+    1049.12,
     'third_party/todomvc/vanilla-idb/index.html?open=0',
-    [new BenchmarkStep(SetupRecreateDB),
-     new BenchmarkStep(SetupRenavigate),
-     new BenchmarkStep(OpenDatabase)],
-  ));
+    [
+      new BenchmarkStep(SetupRecreateDB),
+      new BenchmarkStep(SetupRenavigate),
+      new BenchmarkStep(OpenDatabase)
+    ]));
 
   async function SetupRecreateDB(iframe) {
     await iframe.contentWindow.todo.storage.deleteDatabase();
-    await iframe.contentWindow.todo.storage.open({
-      populated: false
-    }, function () {});
+    await iframe.contentWindow.todo.storage.open({ populated: false }, () => {});
 
     iframe.contentWindow.todo.storage.closeDatabase();
 
-    // Do not count this step in the elapsed time.
-    return false;
+    return false;  // Do not count this step in the elapsed time.
+
   }
 
   async function SetupRenavigate(iframe) {
-    await Benchmark.Navigate('third_party/todomvc/vanilla-idb/index.html?open=0', async function (iframe) {
-      await pageLoaded(iframe);
-      await waitForIndexedDBShutdown();
-    });
+    await Benchmark.Navigate(
+      'third_party/todomvc/vanilla-idb/index.html?open=0',
+      (iframe) => {
+        await pageLoaded(iframe);
+        await waitForIndexedDBShutdown();
+      });
 
-    // Do not count this step in the elapsed time.
-    return false;
+    return false;  // Do not count this step in the elapsed time.
   }
 
   async function OpenDatabase(iframe) {
-    await iframe.contentWindow.todo.storage.open({
-      populated: false
-    }, function () {});
+    await iframe.contentWindow.todo.storage.open({ populated: false }, () => {});
   }
 })();

@@ -25,23 +25,24 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(function () {
-  Benchmark.Add(new Benchmark('VanillaLifecycle', 16.92,
+(() => {
+  Benchmark.Add(new Benchmark(
+    'VanillaLifecycle',
+    16.92,
     'third_party/todomvc/vanilla-idb/index.html?open=0',
-    [new BenchmarkStep(Setup),
-     new BenchmarkStep(AddItems),
-     new BenchmarkStep(CompleteAllItems),
-     new BenchmarkStep(DeleteAllItems)],
-  ));
+    [
+      new BenchmarkStep(Setup),
+      new BenchmarkStep(AddItems),
+      new BenchmarkStep(CompleteAllItems),
+      new BenchmarkStep(DeleteAllItems),
+    ]));
 
   // Configuration.
   const numberOfItemsToAdd = 10;
 
   async function Setup(iframe) {
     await iframe.contentWindow.todo.storage.deleteDatabase();
-    await iframe.contentWindow.todo.storage.open({
-      populated: false
-    }, function () {});
+    await iframe.contentWindow.todo.storage.open({ populated: false }, () => {});
   }
 
   async function AddItems(iframe) {
@@ -56,7 +57,8 @@
 
     let numberOfItemsAdded = 0;
     while (todoList.children.length < numberOfItemsToAdd) {
-      if (numberOfItemsAdded !== numberOfItemsToAdd && todoList.children.length === numberOfItemsAdded) {
+      if (numberOfItemsAdded !== numberOfItemsToAdd &&
+          todoList.children.length === numberOfItemsAdded) {
         // Add the next item.
         newTodo.value = `Something to do ${numberOfItemsAdded}`;
         newTodo.dispatchEvent(new Event('change'));
@@ -75,7 +77,8 @@
     let numberOfItemsCompleted = 0;
     let completed = iframe.contentDocument.querySelectorAll('.completed');
     while (completed.length < numberOfItemsToAdd) {
-      if (numberOfItemsCompleted !== numberOfItemsToAdd && completed.length === numberOfItemsCompleted) {
+      if (numberOfItemsCompleted !== numberOfItemsToAdd &&
+          completed.length === numberOfItemsCompleted) {
         // Complete the next item.
         checkboxes[numberOfItemsCompleted].click();
         numberOfItemsCompleted++;
@@ -98,7 +101,8 @@
 
     let numberOfItemsDeleted = 0;
     while (todoList.children.length !== 0) {
-      if (numberOfItemsDeleted !== numberOfItemsToAdd && todoList.children.length === (numberOfItemsToAdd - numberOfItemsDeleted)) {
+      if (numberOfItemsDeleted !== numberOfItemsToAdd &&
+          todoList.children.length === (numberOfItemsToAdd - numberOfItemsDeleted)) {
         // Delete the next item.
         deleteButtons[numberOfItemsDeleted].click();
         numberOfItemsDeleted++;

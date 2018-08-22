@@ -25,54 +25,49 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-(function () {
-  Benchmark.Add(new Benchmark('VanillaLargeDBCompact', 814.65,
+(() => {
+  Benchmark.Add(new Benchmark(
+    'VanillaLargeDBCompact',
+    814.65,
     'third_party/todomvc/vanilla-idb/index.html?open=0',
-    [new BenchmarkStep(SetupRecreateDB),
-     new BenchmarkStep(SetupRenavigate),
-     new BenchmarkStep(SetupCompact),
-     new BenchmarkStep(OpenDatabase)],
-  ));
+    [
+      new BenchmarkStep(SetupRecreateDB),
+      new BenchmarkStep(SetupRenavigate),
+      new BenchmarkStep(SetupCompact),
+      new BenchmarkStep(OpenDatabase),
+    ]));
 
+  // Delete and recreate a populated database, then close the DB.
   async function SetupRecreateDB(iframe) {
-    // Delete and recreate a populated database, then close the DB.
     await iframe.contentWindow.todo.storage.deleteDatabase();
-    await iframe.contentWindow.todo.storage.open({
-      populated: true
-    }, function () {});
+    await iframe.contentWindow.todo.storage.open({ populated: true }, () => {});
     iframe.contentWindow.todo.storage.closeDatabase();
 
-    // Do not count this step in the elapsed time.
-    return false;
+    return false;  // Do not count this step in the elapsed time.
   }
 
+  // Navigate away from the page and wait for the backing store to close.
   async function SetupRenavigate(iframe) {
-    // Navigate away from the page and wait for the backing store to
-    // close.
-    await Benchmark.Navigate('third_party/todomvc/vanilla-idb/index.html?open=0', async function (iframe) {
-      await waitForIndexedDBShutdown();
-      await pageLoaded(iframe);
-    });
+    await Benchmark.Navigate(
+      'third_party/todomvc/vanilla-idb/index.html?open=0',
+      async (iframe) => {
+        await waitForIndexedDBShutdown();
+        await pageLoaded(iframe);
+      });
 
-    // Do not count this step in the elapsed time.
-    return false;
+    return false;  // Do not count this step in the elapsed time.
   }
 
+  // Open the DB so that compaction can begin.
   async function SetupCompact(iframe) {
-    // Open the DB so that compaction can begin.
-    await iframe.contentWindow.todo.storage.open({
-      populated: false
-    }, function () {});
+    await iframe.contentWindow.todo.storage.open({ populated: false }, () => {});
     await sleep(500);
     iframe.contentWindow.todo.storage.closeDatabase();
 
-    // Do not count this step in the elapsed time.
-    return false;
+    return false;  // Do not count this step in the elapsed time.
   }
 
   async function OpenDatabase(iframe) {
-    await iframe.contentWindow.todo.storage.open({
-      populated: false
-    }, function () {});
+    await iframe.contentWindow.todo.storage.open({ populated: false }, () => {});
   }
 })();

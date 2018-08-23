@@ -51,7 +51,7 @@
         dueAt: Date.now()
       };
 
-      await this.storage.save(newItem, callback);
+      await this.storage.save(null, newItem, callback);
     }
 
     /**
@@ -95,25 +95,20 @@
      *                            complete
      */
     async update(id, data, callback) {
-      await this.storage.save(data, callback, id);
+      await this.storage.save(id, data, callback);
     }
 
-    /** Removes a model from storage
+    /** Removes a model from storage.
      *
      * @param {number} id The ID of the model to remove
-     * @param {function} callback The callback to fire when the removal is
-     *                            complete
      */
-    async remove(id, callback) {
-      await this.storage.remove(id, callback);
+    async remove(id) {
+      await this.storage.remove(id);
     }
 
-    /** WARNING: Will remove ALL data from storage.
-     *
-     * @param {function} callback The callback to fire when the storage is wiped
-     */
-    async removeAll(callback) {
-      await this.storage.drop(callback);
+    /** WARNING: Will remove ALL data from storage. */
+    async removeAll() {
+      await this.storage.drop();
     }
 
     /** Returns a count of all todos. */

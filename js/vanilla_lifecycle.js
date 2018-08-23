@@ -43,7 +43,7 @@
 
   async function Setup(iframe) {
     await iframe.contentWindow.todo.storage.deleteDatabase();
-    await iframe.contentWindow.todo.storage.open({ populated: false }, () => {});
+    await iframe.contentWindow.todo.storage.open({ populated: false });
   }
 
   async function AddItems(iframe) {

@@ -43,7 +43,7 @@
 
   async function SetupRecreateDB(iframe) {
     await iframe.contentWindow.todo.storage.deleteDatabase();
-    await iframe.contentWindow.todo.storage.open({ populated: false }, () => {});
+    await iframe.contentWindow.todo.storage.open({ populated: false });
 
     return false;  // Do not count this step in the elapsed time.
   }
@@ -90,7 +90,7 @@
   }
 
   async function OpenDatabase(iframe) {
-    await iframe.contentWindow.todo.storage.open({ populated: false }, () => {});
+    await iframe.contentWindow.todo.storage.open({ populated: false });
   }
 
   async function CloseDatabase(iframe) {

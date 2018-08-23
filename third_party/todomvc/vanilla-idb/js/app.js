@@ -46,7 +46,7 @@
   const openStore = (parsedUrl.searchParams.get("open") !== "0");
 
   if (openStore) {
-    todo.storage.open({ populated: false }, () => {
+    todo.storage.open({ populated: false }).then(() => {
       // Force the page to update after the DB is opened.
       todo.controller._filter(true);
     });

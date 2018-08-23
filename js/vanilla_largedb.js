@@ -44,7 +44,7 @@
   }
 
   async function SetupCreateDB(iframe) {
-    await iframe.contentWindow.todo.storage.open({ populated: true }, () => {});
+    await iframe.contentWindow.todo.storage.open({ populated: true });
 
     iframe.contentWindow.todo.storage.closeDatabase();
 
@@ -61,7 +61,7 @@
   }
 
   async function OpenDatabase(iframe) {
-    await iframe.contentWindow.todo.storage.open({ populated: false }, () => {});
+    await iframe.contentWindow.todo.storage.open({ populated: false });
   }
 
   async function CloseDatabase(iframe) {

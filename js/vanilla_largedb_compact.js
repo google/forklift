@@ -41,7 +41,7 @@
   // Delete and recreate a populated database, then close the DB.
   async function SetupRecreateDB(iframe) {
     await iframe.contentWindow.todo.storage.deleteDatabase();
-    await iframe.contentWindow.todo.storage.open({ populated: true }, () => {});
+    await iframe.contentWindow.todo.storage.open({ populated: true });
     iframe.contentWindow.todo.storage.closeDatabase();
 
     return false;  // Do not count this step in the elapsed time.
@@ -61,7 +61,7 @@
 
   // Open the DB so that compaction can begin.
   async function SetupCompact(iframe) {
-    await iframe.contentWindow.todo.storage.open({ populated: false }, () => {});
+    await iframe.contentWindow.todo.storage.open({ populated: false });
     await sleep(500);
     iframe.contentWindow.todo.storage.closeDatabase();
 
@@ -69,7 +69,7 @@
   }
 
   async function OpenDatabase(iframe) {
-    await iframe.contentWindow.todo.storage.open({ populated: false }, () => {});
+    await iframe.contentWindow.todo.storage.open({ populated: false });
   }
 
   async function CloseDatabase(iframe) {

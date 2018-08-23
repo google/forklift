@@ -149,9 +149,8 @@
      * storage
      */
     async removeItem(id) {
-      await this.model.remove(id, () => {
-        this.view.render('removeItem', id);
-      });
+      await this.model.remove(id);
+      this.view.render('removeItem', id);
 
       await this._filter();
     };

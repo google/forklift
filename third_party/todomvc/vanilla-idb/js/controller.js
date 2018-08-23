@@ -182,7 +182,7 @@
       });
 
       if (!silent) {
-        await self._filter();
+        await this._filter();
       }
     };
 

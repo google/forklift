@@ -50,7 +50,7 @@
   async function SetupRenavigate(iframe) {
     await Benchmark.Navigate(
       'third_party/todomvc/vanilla-idb/index.html?open=0',
-      (iframe) => {
+      async (iframe) => {
         await pageLoaded(iframe);
         await waitForIndexedDBShutdown();
       });

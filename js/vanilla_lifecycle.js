@@ -35,6 +35,7 @@
       new BenchmarkStep(AddItems),
       new BenchmarkStep(CompleteAllItems),
       new BenchmarkStep(DeleteAllItems),
+      new BenchmarkStep(CloseDatabase),
     ]));
 
   // Configuration.
@@ -109,5 +110,11 @@
       }
       await waitForRequestAnimationFrame();
     }
+  }
+
+  async function CloseDatabase(iframe) {
+    iframe.contentWindow.todo.storage.closeDatabase();
+
+    return false;  // Do not count this step in the elapsed time.
   }
 })();

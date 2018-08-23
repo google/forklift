@@ -34,7 +34,8 @@
       new BenchmarkStep(SetupRecreateDB),
       new BenchmarkStep(SetupApp),
       new BenchmarkStep(SetupRenavigate),
-      new BenchmarkStep(OpenDatabase)
+      new BenchmarkStep(OpenDatabase),
+      new BenchmarkStep(CloseDatabase),
     ]));
 
   // Configuration.
@@ -90,5 +91,11 @@
 
   async function OpenDatabase(iframe) {
     await iframe.contentWindow.todo.storage.open({ populated: false }, () => {});
+  }
+
+  async function CloseDatabase(iframe) {
+    iframe.contentWindow.todo.storage.closeDatabase();
+
+    return false;  // Do not count this step in the elapsed time.
   }
 })();

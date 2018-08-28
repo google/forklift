@@ -126,10 +126,6 @@ class Benchmark {
   }
 
   static Add(suite) {
-    if (typeof Benchmark.suites === 'undefined') {
-      // Keep track of all declared benchmark suites.
-      Benchmark.suites = [];
-    }
     Benchmark.suites.push(suite);
   }
 
@@ -312,3 +308,9 @@ class Benchmark {
     }
   }
 }
+
+// Keeps track of all declared benchmark suites.
+//
+// TODO(pwnall): This can take advantage of the ES class fields proposal, once
+//               that is formalized and adopted by all major browsers.
+Benchmark.suites = [];

@@ -33,79 +33,10 @@ const numberOfIterations = 5;
 // Simple framework for running the benchmark suites and
 // computing a score based on the timing measurements.
 
-
-// A benchmark step has a name (string) and a function that will be run
-// to do the performance measurement.
-function BenchmarkStep(fn) {
-  this.fn = fn;
-}
-
-// Benchmarks consist of a name and the set of steps.
-function Benchmark(name, scaling, src, steps) {
-  this.name = name;
-  this.scaling = scaling;
-  this.src = src;
-  this.steps = steps;
-}
-
-Benchmark.Add = function (suite) {
-  if (typeof Benchmark.suites === 'undefined') {
-    // Keep track of all declared benchmark suites.
-    Benchmark.suites = [];
-  }
-  Benchmark.suites.push(suite);
-}
-
-
 // Override the alert function to throw an exception instead.
 alert = function (s) {
   throw 'Alert called with argument: ' + s;
 };
-
-// To make the benchmark results predictable, we replace Math.random
-// with a 100% deterministic alternative.
-Benchmark.ResetRNG = function () {
-  Math.random = (function () {
-    let seed = 49734321;
-    return function () {
-      // Robert Jenkins' 32 bit integer hash function.
-      seed = ((seed + 0x7ed55d16) + (seed << 12)) & 0xffffffff;
-      seed = ((seed ^ 0xc761c23c) ^ (seed >>> 19)) & 0xffffffff;
-      seed = ((seed + 0x165667b1) + (seed << 5)) & 0xffffffff;
-      seed = ((seed + 0xd3a2646c) ^ (seed << 9)) & 0xffffffff;
-      seed = ((seed + 0xfd7046c5) + (seed << 3)) & 0xffffffff;
-      seed = ((seed ^ 0xb55a4f09) ^ (seed >>> 16)) & 0xffffffff;
-      return (seed & 0xfffffff) / 0x10000000;
-    };
-  })();
-}
-
-Benchmark.recycleIframe = function (options) {
-  const iframeHolder = document.querySelector('#iframe-holder');
-
-  // Delete iframe if it exists.
-  if (this.iframe) {
-    this.iframe.parentNode.removeChild(this.iframe);
-    this.iframe = null;
-  }
-
-  if (!options.create) {
-    // We want to only delete the iframe and hide the iframe holder.
-    iframeHolder.classList.remove('iframe-holder');
-    iframeHolder.style = 'visibility: hidden';
-    return;
-  }
-
-  // Create new iframe.
-  this.iframe = document.createElement('iframe');
-  this.iframe.id = 'iframe';
-  this.iframe.scrolling = 'no';
-
-  // Show iframe holder div.
-  iframeHolder.appendChild(this.iframe);
-  iframeHolder.className = 'iframe-holder';
-  iframeHolder.style = 'visibility: visible';
-}
 
 function navigateIframe(src, onload) {
   const iframe = document.querySelector('#iframe');
@@ -120,11 +51,6 @@ function navigateIframe(src, onload) {
   })
   iframe.src = src + '&' + Date.now();
   return promise;
-}
-
-Benchmark.Navigate = async function (src, onload) {
-  Benchmark.recycleIframe({create: true});
-  await navigateIframe(src, onload);
 }
 
 function sendEnterKeypress(el) {
@@ -182,6 +108,77 @@ function checkTuning(suite, result) {
   }
 }
 
+// A benchmark step has a name (string) and a function that will be run
+// to do the performance measurement.
+function BenchmarkStep(fn) {
+  this.fn = fn;
+}
+
+// Benchmarks consist of a name and the set of steps.
+function Benchmark(name, scaling, src, steps) {
+  this.name = name;
+  this.scaling = scaling;
+  this.src = src;
+  this.steps = steps;
+}
+
+Benchmark.Add = function (suite) {
+  if (typeof Benchmark.suites === 'undefined') {
+    // Keep track of all declared benchmark suites.
+    Benchmark.suites = [];
+  }
+  Benchmark.suites.push(suite);
+}
+
+// To make the benchmark results predictable, we replace Math.random
+// with a 100% deterministic alternative.
+Benchmark.ResetRNG = function () {
+  Math.random = (function () {
+    let seed = 49734321;
+    return function () {
+      // Robert Jenkins' 32 bit integer hash function.
+      seed = ((seed + 0x7ed55d16) + (seed << 12)) & 0xffffffff;
+      seed = ((seed ^ 0xc761c23c) ^ (seed >>> 19)) & 0xffffffff;
+      seed = ((seed + 0x165667b1) + (seed << 5)) & 0xffffffff;
+      seed = ((seed + 0xd3a2646c) ^ (seed << 9)) & 0xffffffff;
+      seed = ((seed + 0xfd7046c5) + (seed << 3)) & 0xffffffff;
+      seed = ((seed ^ 0xb55a4f09) ^ (seed >>> 16)) & 0xffffffff;
+      return (seed & 0xfffffff) / 0x10000000;
+    };
+  })();
+}
+
+Benchmark.recycleIframe = function (options) {
+  const iframeHolder = document.querySelector('#iframe-holder');
+
+  // Delete iframe if it exists.
+  if (this.iframe) {
+    this.iframe.parentNode.removeChild(this.iframe);
+    this.iframe = null;
+  }
+
+  if (!options.create) {
+    // We want to only delete the iframe and hide the iframe holder.
+    iframeHolder.classList.remove('iframe-holder');
+    iframeHolder.style = 'visibility: hidden';
+    return;
+  }
+
+  // Create new iframe.
+  this.iframe = document.createElement('iframe');
+  this.iframe.id = 'iframe';
+  this.iframe.scrolling = 'no';
+
+  // Show iframe holder div.
+  iframeHolder.appendChild(this.iframe);
+  iframeHolder.className = 'iframe-holder';
+  iframeHolder.style = 'visibility: visible';
+}
+
+Benchmark.Navigate = async function (src, onload) {
+  Benchmark.recycleIframe({create: true});
+  await navigateIframe(src, onload);
+}
 
 // Counts the total number of registered benchmarks. Useful for
 // showing progress as a percentage.

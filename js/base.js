@@ -110,207 +110,205 @@ function checkTuning(suite, result) {
 
 // A benchmark step has a name (string) and a function that will be run
 // to do the performance measurement.
-function BenchmarkStep(fn) {
-  this.fn = fn;
+class BenchmarkStep {
+  constructor(fn) {
+    this.fn = fn;
+  }
 }
 
 // Benchmarks consist of a name and the set of steps.
-function Benchmark(name, scaling, src, steps) {
-  this.name = name;
-  this.scaling = scaling;
-  this.src = src;
-  this.steps = steps;
-}
-
-Benchmark.Add = function (suite) {
-  if (typeof Benchmark.suites === 'undefined') {
-    // Keep track of all declared benchmark suites.
-    Benchmark.suites = [];
-  }
-  Benchmark.suites.push(suite);
-}
-
-// To make the benchmark results predictable, we replace Math.random
-// with a 100% deterministic alternative.
-Benchmark.ResetRNG = function () {
-  Math.random = (function () {
-    let seed = 49734321;
-    return function () {
-      // Robert Jenkins' 32 bit integer hash function.
-      seed = ((seed + 0x7ed55d16) + (seed << 12)) & 0xffffffff;
-      seed = ((seed ^ 0xc761c23c) ^ (seed >>> 19)) & 0xffffffff;
-      seed = ((seed + 0x165667b1) + (seed << 5)) & 0xffffffff;
-      seed = ((seed + 0xd3a2646c) ^ (seed << 9)) & 0xffffffff;
-      seed = ((seed + 0xfd7046c5) + (seed << 3)) & 0xffffffff;
-      seed = ((seed ^ 0xb55a4f09) ^ (seed >>> 16)) & 0xffffffff;
-      return (seed & 0xfffffff) / 0x10000000;
-    };
-  })();
-}
-
-Benchmark.recycleIframe = function (options) {
-  const iframeHolder = document.querySelector('#iframe-holder');
-
-  // Delete iframe if it exists.
-  if (this.iframe) {
-    this.iframe.parentNode.removeChild(this.iframe);
-    this.iframe = null;
+class Benchmark {
+  constructor(name, scaling, src, steps) {
+    this.name = name;
+    this.scaling = scaling;
+    this.src = src;
+    this.steps = steps;
   }
 
-  if (!options.create) {
-    // We want to only delete the iframe and hide the iframe holder.
-    iframeHolder.classList.remove('iframe-holder');
-    iframeHolder.style = 'visibility: hidden';
-    return;
+  static Add(suite) {
+    if (typeof Benchmark.suites === 'undefined') {
+      // Keep track of all declared benchmark suites.
+      Benchmark.suites = [];
+    }
+    Benchmark.suites.push(suite);
   }
 
-  // Create new iframe.
-  this.iframe = document.createElement('iframe');
-  this.iframe.id = 'iframe';
-  this.iframe.scrolling = 'no';
-
-  // Show iframe holder div.
-  iframeHolder.appendChild(this.iframe);
-  iframeHolder.className = 'iframe-holder';
-  iframeHolder.style = 'visibility: visible';
-}
-
-Benchmark.Navigate = async function (src, onload) {
-  Benchmark.recycleIframe({create: true});
-  await navigateIframe(src, onload);
-}
-
-// Counts the total number of registered benchmarks. Useful for
-// showing progress as a percentage.
-Benchmark.CountSteps = function () {
-  let result = 0;
-  const suites = Benchmark.suites;
-  for (let i = 0; i < suites.length; i++) {
-    result += numberOfIterations * suites[i].steps.length;
+  // To make the benchmark results predictable, we replace Math.random
+  // with a 100% deterministic alternative.
+  static ResetRNG() {
+    Math.random = (() => {
+      let seed = 49734321;
+      return () => {
+        // Robert Jenkins' 32 bit integer hash function.
+        seed = ((seed + 0x7ed55d16) + (seed << 12)) & 0xffffffff;
+        seed = ((seed ^ 0xc761c23c) ^ (seed >>> 19)) & 0xffffffff;
+        seed = ((seed + 0x165667b1) + (seed << 5)) & 0xffffffff;
+        seed = ((seed + 0xd3a2646c) ^ (seed << 9)) & 0xffffffff;
+        seed = ((seed + 0xfd7046c5) + (seed << 3)) & 0xffffffff;
+        seed = ((seed ^ 0xb55a4f09) ^ (seed >>> 16)) & 0xffffffff;
+        return (seed & 0xfffffff) / 0x10000000;
+      };
+    })();
   }
-  // Increase the count by 1 so the last step doesn't appear 'finished'
-  // in the progress bar.
-  result++;
-  return result;
-}
 
+  static recycleIframe(options) {
+    const iframeHolder = document.querySelector('#iframe-holder');
 
-// Computes the geometric mean of a set of numbers.
-Benchmark.GeometricMean = function (numbers) {
-  let log = 0;
-  for (let i = 0; i < numbers.length; i++) {
-    log += Math.log(numbers[i]);
+    // Delete iframe if it exists.
+    if (this.iframe) {
+      this.iframe.parentNode.removeChild(this.iframe);
+      this.iframe = null;
+    }
+
+    if (!options.create) {
+      // We want to only delete the iframe and hide the iframe holder.
+      iframeHolder.classList.remove('iframe-holder');
+      iframeHolder.style = 'visibility: hidden';
+      return;
+    }
+
+    // Create new iframe.
+    this.iframe = document.createElement('iframe');
+    this.iframe.id = 'iframe';
+    this.iframe.scrolling = 'no';
+
+    // Show iframe holder div.
+    iframeHolder.appendChild(this.iframe);
+    iframeHolder.className = 'iframe-holder';
+    iframeHolder.style = 'visibility: visible';
   }
-  return Math.pow(Math.E, log / numbers.length);
-}
 
-
-// Computes the geometric mean of a set of throughput time measurements.
-Benchmark.GeometricMeanTime = function (measurements) {
-  let log = 0;
-  for (let i = 0; i < measurements.length; i++) {
-    log += Math.log(measurements[i].time);
+  static async Navigate(src, onload) {
+    Benchmark.recycleIframe({create: true});
+    await navigateIframe(src, onload);
   }
-  return Math.pow(Math.E, log / measurements.length);
-}
 
-
-// Converts a score value to a string with at least three significant
-// digits.
-Benchmark.FormatScore = function (value) {
-  if (value > 100) {
-    return value.toFixed(0);
-  } else {
-    return value.toPrecision(3);
+  // Counts the total number of registered benchmarks.
+  //
+  // Useful for showing progress as a percentage.
+  static CountSteps() {
+    let result = 0;
+    for (let suite of Benchmark.suites) {
+      result += numberOfIterations * suite.steps.length;
+    }
+    // Increase the count by 1 so the last step doesn't appear 'finished'
+    // in the progress bar.
+    result++;
+    return result;
   }
-}
 
-// Notifies the runner that we're done running a step in
-// the benchmark. This can be useful to report progress.
-Benchmark.prototype.NotifyStep = function (result) {
-}
-
-// Notifies the runner that we're done with running a benchmark and that
-// we have a result which can be reported to the user if needed.
-Benchmark.prototype.NotifyResult = function (result) {
-  Benchmark.scores.push(result);
-  if (this.runner.NotifyResult) {
-    const formatted = Benchmark.FormatScore(result);
-    this.runner.NotifyResult(this.name, formatted);
+  // Computes the geometric mean of a set of numbers.
+  static GeometricMean(numbers) {
+    let log = 0;
+    for (let number of numbers) {
+      log += Math.log(number);
+    }
+    return Math.pow(Math.E, log / numbers.length);
   }
-}
 
-// Notifies the runner that running a benchmark resulted in an error.
-Benchmark.prototype.NotifyError = function (error) {
-  if (this.runner.NotifyError) {
-    this.runner.NotifyError(this.name, error);
+
+  // Computes the geometric mean of a set of throughput time measurements.
+  static GeometricMeanTime(measurements) {
+    let log = 0;
+    for (let measurement of measurements) {
+      log += Math.log(measurement.time);
+    }
+    return Math.pow(Math.E, log / measurements.length);
   }
-}
 
-// This function runs a benchmark and calculates the amount of time
-// it took to complete.
-Benchmark.prototype.RunSteps = async function (runner) {
-  Benchmark.ResetRNG();
-  this.runner = runner;
-  let elapsed = 0;
+  // Converts a score value to a string with at least three significant
+  // digits.
+  static FormatScore(value) {
+    return (value > 100) ? value.toFixed(0) : value.toPrecision(3);
+  }
 
-  for (let step of this.steps) {
-    if (runner.NotifyStart) runner.NotifyStart(this.name, step.fn.name);
-    const iframe = document.querySelector('#iframe');
-    const start = performance.now();
-    const shouldScore = await step.fn(iframe);
-    if (shouldScore !== false) {
-      elapsed += performance.now() - start;
+  // Notifies the runner that we're done running a step in
+  // the benchmark. This can be useful to report progress.
+  NotifyStep(result) {
+  }
+
+  // Notifies the runner that we're done with running a benchmark and that
+  // we have a result which can be reported to the user if needed.
+  NotifyResult(result) {
+    Benchmark.scores.push(result);
+    if (this.runner.NotifyResult) {
+      const formatted = Benchmark.FormatScore(result);
+      this.runner.NotifyResult(this.name, formatted);
     }
   }
 
-  return elapsed;
-}
-
-Benchmark.RunIterations = async function (runner, suite) {
-  const self = this;
-  suite.results = [];
-
-  for (let i = 0; i < numberOfIterations; i++) {
-    Benchmark.recycleIframe({create: true});
-    await navigateIframe(suite.src, async function () {
-      await pageLoaded(self.iframe);
-      suite.results.push(await suite.RunSteps(runner));
-    });
+  // Notifies the runner that running a benchmark resulted in an error.
+  NotifyError(error) {
+    if (this.runner.NotifyError) {
+      this.runner.NotifyError(this.name, error);
+    }
   }
 
-  const scaling = suite.scaling ? suite.scaling : 1;
-  const result = Benchmark.GeometricMean(suite.results) * scaling;
-  if (tuningMode) {
-    console.log(suite.name);
-    console.log(`results: ${JSON.stringify(suite.results)}`);
-    console.log(`mean result: ${result/scaling}`);
-    console.log(`scaled result: ${result}`);
+  // Runs a benchmark and calculates the amount of time it took to complete.
+  async RunSteps(runner) {
+    Benchmark.ResetRNG();
+    this.runner = runner;
+    let elapsed = 0;
+
+    for (let step of this.steps) {
+      if (runner.NotifyStart)
+        runner.NotifyStart(this.name, step.fn.name);
+
+      const iframe = document.querySelector('#iframe');
+      const start = performance.now();
+      const shouldScore = await step.fn(iframe);
+      if (shouldScore !== false) {
+        elapsed += performance.now() - start;
+      }
+    }
+
+    return elapsed;
   }
-  return result;
-}
 
-// Runs all registered benchmarks.  Once done, the final score is
-// reported to the runner.
-Benchmark.RunBenchmarks = async function (runner) {
-  Benchmark.scores = [];
+  static async RunIterations(runner, suite) {
+    suite.results = [];
 
-  for (let suite of Benchmark.suites) {
-    const result = await Benchmark.RunIterations(runner, suite);
-    checkTuning(suite, result);
-    suite.NotifyResult(result);
+    for (let i = 0; i < numberOfIterations; i++) {
+      Benchmark.recycleIframe({ create: true });
+      await navigateIframe(suite.src, async () => {
+        await pageLoaded(this.iframe);
+        suite.results.push(await suite.RunSteps(runner));
+      });
+    }
+
+    const scaling = suite.scaling ? suite.scaling : 1;
+    const result = Benchmark.GeometricMean(suite.results) * scaling;
+    if (tuningMode) {
+      console.log(suite.name);
+      console.log(`results: ${JSON.stringify(suite.results)}`);
+      console.log(`mean result: ${result/scaling}`);
+      console.log(`scaled result: ${result}`);
+    }
+    return result;
   }
 
-  // We've completed all of the steps, so update the progress bar and
-  // sleep briefly to let the UI update.
-  Benchmark.recycleIframe({create: false});
-  if (runner.NotifyStart) runner.NotifyStart('Wrapping up');
-  await sleep(100);
+  // Runs all registered benchmarks.  Once done, the final score is
+  // reported to the runner.
+  static async RunBenchmarks(runner) {
+    Benchmark.scores = [];
 
-  // show final result
-  if (runner.NotifyScore) {
-    const score = Benchmark.GeometricMean(Benchmark.scores);
-    const formatted = Benchmark.FormatScore(score);
-    runner.NotifyScore(formatted);
+    for (let suite of Benchmark.suites) {
+      const result = await Benchmark.RunIterations(runner, suite);
+      checkTuning(suite, result);
+      suite.NotifyResult(result);
+    }
+
+    // We've completed all of the steps, so update the progress bar and
+    // sleep briefly to let the UI update.
+    Benchmark.recycleIframe({create: false});
+    if (runner.NotifyStart) runner.NotifyStart('Wrapping up');
+    await sleep(100);
+
+    // show final result
+    if (runner.NotifyScore) {
+      const score = Benchmark.GeometricMean(Benchmark.scores);
+      const formatted = Benchmark.FormatScore(score);
+      runner.NotifyScore(formatted);
+    }
   }
 }

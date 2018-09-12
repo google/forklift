@@ -20,6 +20,6 @@ file:// origin loads.
 ## Limitations
 
 This first edition of the benchmark was tested in the latest stable
-versions of Chrome, Safari, and Firefox.  If you test it in other
+versions of Chrome, Edge, Firefox, and Safari.  If you test it in other
 settings, feel free to file an issue and we will update our docs with
 what you have found.

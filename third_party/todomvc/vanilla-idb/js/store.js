@@ -52,6 +52,7 @@
         };
         request.onupgradeneeded = (event) => {
           const idbDatabase = event.target.result;
+          const transaction = event.target.transaction;
           for (let storeName in dbSchema) {
             if (!dbSchema.hasOwnProperty(storeName)) continue;
 
@@ -71,6 +72,8 @@
               store.createIndex(indexName, indexKey, indexOptions);
             }
           }
+          if (transaction.commit)
+            transaction.commit();
         };
       });
     }
@@ -101,6 +104,8 @@
         const objectStore = transaction.objectStore(storeName);
         const request = objectStore.clear();
         request.onerror = (event) => { reject(event.target.error); };
+        if (transaction.commit)
+          transaction.commit();
       });
     }
 
@@ -128,11 +133,12 @@
                                                 : objectStore;
           const request = ('range' in query) ? dataSource.count(query.range)
                                             : dataSource.count();
-
           request.onerror = (event) => { reject(event.target.error); };
           request.onsuccess = (event) => {
             results[resultIndex] = event.target.result;
           };
+          if (transaction.commit)
+            transaction.commit();
         }
       });
     }
@@ -152,6 +158,8 @@
         const objectStore = transaction.objectStore(storeName);
         const request = objectStore.delete(objectKey);
         request.onerror = (event) => { reject(event.target.error); };
+        if (transaction.commit)
+          transaction.commit();
       });
     }
 
@@ -179,7 +187,11 @@
         request.onerror = (event) => { reject(event.target.error); };
         request.onsuccess = (event) => {
           const cursor = event.target.result;
-          if (!cursor) return;  // The iteration completed.
+          if (!cursor) {
+            if (transaction.commit)
+              transaction.commit();
+            return;  // The iteration completed.
+          }
 
           try {
             const willContinue = cursorCallback(cursor);
@@ -210,6 +222,8 @@
           const request = objectStore.put(object);
           request.onerror = (event) => { reject(event.target.error); };
         }
+        if (transaction.commit)
+          transaction.commit();
       });
     }
 
@@ -234,6 +248,8 @@
           const putRequest = (objectStore.keyPath === null) ?
               objectStore.put(newObject, key) : objectStore.put(newObject);
           putRequest.onerror = (event) => { resolve(event.target.error); };
+          if (transaction.commit)
+            transaction.commit();
         };
       });
     }

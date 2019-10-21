@@ -98,7 +98,7 @@
       return new Promise((resolve, reject) => {
         const transaction = this._idbDatabase.transaction([storeName],
                                                           'readwrite');
-        transaction.onerror = (event) => { resolve(event.target.error); };
+        transaction.onerror = (event) => { reject(event.target.error); };
         transaction.oncomplete = () => { resolve(); };
 
         const objectStore = transaction.objectStore(storeName);
@@ -121,7 +121,7 @@
         const results = [];
         const transaction = this._idbDatabase.transaction([storeName],
                                                           'readonly');
-        transaction.onerror = (event) => { resolve(event.target.error); };
+        transaction.onerror = (event) => { reject(event.target.error); };
         transaction.oncomplete = () => { resolve(results); };
 
         for (let query of queries) {
@@ -152,7 +152,7 @@
       return new Promise((resolve, reject) => {
         const transaction = this._idbDatabase.transaction([storeName],
                                                           'readwrite');
-        transaction.onerror = (event) => { resolve(event.target.error); };
+        transaction.onerror = (event) => { reject(event.target.error); };
         transaction.oncomplete = () => { resolve(); };
 
         const objectStore = transaction.objectStore(storeName);
@@ -175,7 +175,7 @@
       return new Promise((resolve, reject) => {
         const transaction = this._idbDatabase.transaction([storeName],
                                                           'readonly');
-        transaction.onerror = (event) => { resolve(event.target.error); };
+        transaction.onerror = (event) => { reject(event.target.error); };
         transaction.oncomplete = () => { resolve(); };
 
         const objectStore = transaction.objectStore(storeName);
@@ -214,7 +214,7 @@
       return new Promise((resolve, reject) => {
         const transaction = this._idbDatabase.transaction([storeName],
                                                           'readwrite');
-        transaction.onerror = (event) => { resolve(event.target.error); };
+        transaction.onerror = (event) => { reject(event.target.error); };
         transaction.oncomplete = () => { resolve(); };
 
         const objectStore = transaction.objectStore(storeName);
@@ -231,7 +231,7 @@
       return new Promise((resolve, reject) => {
         const transaction = this._idbDatabase.transaction([storeName],
                                                           'readwrite');
-        transaction.onerror = (event) => { resolve(event.target.error); };
+        transaction.onerror = (event) => { reject(event.target.error); };
         transaction.oncomplete = () => { resolve(); };
 
         const objectStore = transaction.objectStore(storeName);
@@ -246,8 +246,9 @@
             reject(callbackError);
           }
           const putRequest = (objectStore.keyPath === null) ?
-              objectStore.put(newObject, key) : objectStore.put(newObject);
-          putRequest.onerror = (event) => { resolve(event.target.error); };
+              objectStore.put(newObject, objectKey) :
+              objectStore.put(newObject);
+          putRequest.onerror = (event) => { reject(event.target.error); };
           if (transaction.commit)
             transaction.commit();
         };

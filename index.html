@@ -13,6 +13,7 @@
       for (let script of scripts) {
         const newScript = document.createElement('script');
         newScript.src = `${script}?now=${now}`;
+        newScript.async = false;
         newScript.defer = true;
         document.head.appendChild(newScript);
       }
